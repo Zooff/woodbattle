@@ -1,6 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { GameMapService } from './game-map.service';
-import { GameMap } from './interfaces/gameMap-interface';
+import { GameMap } from '@woodbattle/shared/model';
+
 
 @Controller('game-map')
 export class GameMapController {

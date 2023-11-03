@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GameMap } from './interfaces/gameMap-interface';
+import { GameMap, Layer } from '@woodbattle/shared/model'
 import path from 'path';
 
 const tmxParser = require('tmx-parser')
@@ -50,15 +50,24 @@ export class GameMapService {
             formatedMap.tileWidth = map.tileWidth
     
             for (const layer of map.layers)  {
-                formatedMap.layers.push(layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }))
+                
+                const formatedLayer: Layer = {
+                    tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
+                    name: layer.name
+                }
+                formatedMap.layers.push(formatedLayer)
             }
 
             for (const tileset of map.tileSets) {
+                console.log(tileset)
                 formatedMap.tileset.push({
                     firstGid: tileset.firstGid,
+                    lastGid: tileset.firstGid + tileset.tiles.length,
                     source: tileset.name,
                     tileHeight: tileset.tileHeight,
-                    tileWidth: tileset.tileWidth
+                    tileWidth: tileset.tileWidth,
+                    width: tileset.image.width,
+                    height: tileset.image.height
                 })
             }
     
