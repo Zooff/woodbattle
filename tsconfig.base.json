@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@woodbattle/client/": ["libs/client/src/index.ts"],
+      "@woodbattle/shared/model": ["libs/shared/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
