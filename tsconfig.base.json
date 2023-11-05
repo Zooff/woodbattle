@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@woodbattle/client/": ["libs/client/src/index.ts"],
+      "@woodbattle/client": ["libs/client/src/index.ts"],
       "@woodbattle/shared/model": ["libs/shared/src/index.ts"]
     }
   },

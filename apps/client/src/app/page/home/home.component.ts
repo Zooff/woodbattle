@@ -1,8 +1,9 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild } from '@angular/core';
 import { GameMapService } from '../../service/game-map.service';
-import { GameMap } from '@woodbattle/shared/model';
+import { GameMap, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
+import { GameStateService } from '../../service/game-state.service';
 
 @Component({
   selector: 'woodbattle-home',
@@ -25,6 +26,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   constructor(
     private gameMapService: GameMapService,
+    private gameStateService: GameStateService,
     private ressourceService: ResourceService,
     private ngZone: NgZone
   ) { }
@@ -65,6 +67,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
     
     this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background')
 
+    for (const player of this.gameStateService.getAllPlayers()) {
+      player.draw(this.context)
+    }
+
     this.gameMapService.drawMapLayer(this.context, this.actualMap, 'tree')
 
     // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
@@ -81,6 +87,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
     this.mainCanvas.nativeElement.width = this.canvasWidth
     this.mainCanvas.nativeElement.height = this.canvasHeight
+
+    this.gameStateService.createPlayer(new Vector2(40, 40))
 
     
     this.ngZone.runOutsideAngular( () => {

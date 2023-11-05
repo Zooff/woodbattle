@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, filter, from, fromEvent, map, mergeMap, scan } from 'rxjs';
+import { Observable, filter, first, from, fromEvent, map, mergeMap, scan, take, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -31,20 +31,21 @@ export class ResourceService {
         img.src = '/assets/image/' + name + '.png'
         this.imgRessources[name] = {image: img, loaded: false}
         return fromEvent(img, 'load').pipe(
-          map((e) => {
+          tap(() => {
             this.imgRessources[name].loaded = true
-          })
+          }),
+          first()
         )
       }),
       scan((acc: any[], curr) => [...acc, curr], []),
-      filter((images) => images.length === names.length)
+      filter((images) => images.length === names.length),
+      take(1)
     )
   }
 
   getImage(name: string): HTMLImageElement | null {
-    console.log(this.imgRessources[name])
+    console.log(this.imgRessources)
     if (this.imgRessources[name] && this.imgRessources[name].loaded) {
-      console.log(this.imgRessources[name].image)
       return this.imgRessources[name].image
     }
 
