@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { Player } from '@woodbattle/client'
+import { PlayerCharacter } from '@woodbattle/client'
 import { Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
@@ -9,19 +9,19 @@ import { ResourceService } from "./resource.service";
 })
 export class GameStateService {
 
-    private players: Player[] = []
+    private players: PlayerCharacter[] = []
 
     constructor(
         private configService: ConfigService,
         private resourceService: ResourceService
-    ) {}
+    ) {}git 
 
 
     createPlayer( position: Vector2, scale: number) {
 
         console.log(this.resourceService.getImage(this.configService.playerSprite))
 
-        const player = new Player(
+        const player = new PlayerCharacter(
             position,
             this.resourceService.getImage(this.configService.playerSprite)!,
             0,

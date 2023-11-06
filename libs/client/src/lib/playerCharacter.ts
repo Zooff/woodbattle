@@ -1,7 +1,7 @@
 import { Vector2 } from "@woodbattle/shared/model";
 import { Sprite } from "./sprite";
 
-export class Player extends Sprite {
+export class PlayerCharacter extends Sprite {
 
     constructor (
         position: Vector2,
