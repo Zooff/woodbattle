@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@woodbattle/client": ["libs/client/src/index.ts"],
+      "@woodbattle/server": ["libs/server/src/index.ts"],
       "@woodbattle/shared/model": ["libs/shared/src/index.ts"]
     }
   },

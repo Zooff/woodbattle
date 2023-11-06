@@ -1,0 +1,26 @@
+{
+  "name": "server-lib",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/server/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/server",
+        "main": "libs/server/src/index.ts",
+        "tsConfig": "libs/server/tsconfig.lib.json",
+        "assets": ["libs/server/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/server/**/*.ts", "libs/server/package.json"]
+      }
+    }
+  },
+  "tags": []
+}

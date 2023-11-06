@@ -24,6 +24,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   private actualMap: GameMap | null = null
 
+  public scale: number = 4
+
   constructor(
     private gameMapService: GameMapService,
     private gameStateService: GameStateService,
@@ -36,8 +38,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
       next: (shopmap: GameMap) => {
         this.loadingMap = false
         this.actualMap = shopmap
-        this.canvasWidth = shopmap.width * shopmap.tileWidth
-        this.canvasHeight = shopmap.height * shopmap.tileHeight
+        this.canvasWidth = shopmap.width * shopmap.tileWidth * this.scale
+        this.canvasHeight = shopmap.height * shopmap.tileHeight * this.scale
 
         this.initGame()
       },
@@ -53,25 +55,29 @@ export class HomeComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     if (this.mainCanvas) {
       this.context = this.mainCanvas.nativeElement.getContext('2d')
-      this.context?.fillRect(0,0, this.mainCanvas.nativeElement.width, this.mainCanvas.nativeElement.height)
+      this.context?.fillRect(0, 0, this.mainCanvas.nativeElement.width, this.mainCanvas.nativeElement.height)
     }
 
   }
 
 
-  gameLoop( delta?: number ) {
+  gameLoop(delta?: number) {
 
     if (!this.context || !this.actualMap) return
 
-    this.context.clearRect(0,0, this.canvasWidth, this.canvasHeight)
-    
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background')
+    this.mainCanvas!.nativeElement.width = this.actualMap.width * this.actualMap.tileWidth * this.scale
+    this.mainCanvas!.nativeElement.height = this.actualMap.height * this.actualMap.tileHeight * this.scale
+
+    this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+
+    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
 
     for (const player of this.gameStateService.getAllPlayers()) {
+      player.setScale(this.scale)
       player.draw(this.context)
     }
 
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'tree')
+    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'tree', this.scale)
 
     // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
     // this.mainCanvas!.nativeElement.height = this.canvasHeight * 2
@@ -81,19 +87,26 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   initGame() {
-    if (!this.mainCanvas) return 
+    if (!this.mainCanvas) return
 
     console.log('INIT GAME')
 
     this.mainCanvas.nativeElement.width = this.canvasWidth
     this.mainCanvas.nativeElement.height = this.canvasHeight
 
-    this.gameStateService.createPlayer(new Vector2(40, 40))
+    this.gameStateService.createPlayer(new Vector2(40, 40), this.scale)
 
-    
-    this.ngZone.runOutsideAngular( () => {
+
+    this.ngZone.runOutsideAngular(() => {
       this.gameLoop()
     })
+  }
+
+
+  setScale(op: string) {
+
+    if (op === '-' && this.scale > 1) this.scale--
+    if (op === '+') this.scale++
   }
 
 }

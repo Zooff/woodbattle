@@ -44,7 +44,6 @@ export class ResourceService {
   }
 
   getImage(name: string): HTMLImageElement | null {
-    console.log(this.imgRessources)
     if (this.imgRessources[name] && this.imgRessources[name].loaded) {
       return this.imgRessources[name].image
     }

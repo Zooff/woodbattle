@@ -33,20 +33,23 @@ export class Sprite {
         this.generateFrames()
     }
 
+    public setScale ( scale: number) {
+        this.scale = scale
+    }
+
 
     generateFrames() {
         for (let i = 0; i<this.vFrame; i++) {
             for (let j = 0; j < this.hFrame; j++) {
                 this.frames.push({
                     position: new Vector2(j, i),
-                    frameSize: new Vector2(64, 64)
+                    frameSize: new Vector2(20, 32)
                 })
             }
         }
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-
 
         ctx.drawImage(this.image,
             this.frames[this.frame].position.x,
@@ -55,8 +58,8 @@ export class Sprite {
             this.frames[this.frame].frameSize.y,
             this.position.x,
             this.position.y,
-            this.frameSize.x * this.scale,
-            this.frameSize.y * this.scale
+            this.frames[this.frame].frameSize.x * this.scale,
+            this.frames[this.frame].frameSize.y * this.scale
         )
     }
 

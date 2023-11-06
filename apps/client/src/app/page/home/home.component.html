@@ -4,4 +4,10 @@
     <div class="canvas-container">
         <canvas class="main-canvas" #canvas></canvas>
     </div>
+    <div class="option-container">
+        Scale:
+        <button (click)="setScale('-')"> - </button>
+        {{scale}}
+        <button (click)="setScale('+')"> + </button>
+    </div>
 </div>

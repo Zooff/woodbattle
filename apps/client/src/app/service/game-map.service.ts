@@ -37,8 +37,10 @@ export class GameMapService {
   }
 
 
-  drawMapLayer(context: CanvasRenderingContext2D, map: GameMap, layerName: string) {
+  drawMapLayer(context: CanvasRenderingContext2D, map: GameMap, layerName: string, scale: number) {
     for (const layer of map.layers) {
+
+
       if (!layer.name.includes(layerName)) continue
       let x = 0
       let y = 0
@@ -53,14 +55,22 @@ export class GameMapService {
         }
 
         const tileset = this.getTileSetFromGid(layer.tiles[i].gid, map)
-
         if (tileset) {
 
           const tileInRow = tileset?.tileset.width / tileset.tileset.tileWidth
-          const offsetY = Math.floor(layer.tiles[i].id / tileInRow ) * tileset.tileset.tileWidth
+          const offsetY = Math.floor(layer.tiles[i].id / tileInRow) * tileset.tileset.tileWidth
           const offsetX = (layer.tiles[i].id % tileInRow) * tileset.tileset.tileHeight
+
           if (tileset.image) {
-            context.drawImage(tileset.image, offsetX , offsetY, tileset.tileset.tileWidth, tileset.tileset.tileHeight, x * tileset.tileset.tileWidth, y * tileset.tileset.tileHeight, tileset.tileset.tileWidth, tileset.tileset.tileHeight)
+            context.drawImage(tileset.image,
+              offsetX,
+              offsetY,
+              tileset.tileset.tileWidth,
+              tileset.tileset.tileHeight,
+              x * tileset.tileset.tileWidth * scale,
+              y * tileset.tileset.tileHeight * scale,
+              tileset.tileset.tileWidth * scale,
+              tileset.tileset.tileHeight * scale)
           }
 
         }

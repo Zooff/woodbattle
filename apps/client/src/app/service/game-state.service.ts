@@ -17,7 +17,7 @@ export class GameStateService {
     ) {}
 
 
-    createPlayer( position: Vector2) {
+    createPlayer( position: Vector2, scale: number) {
 
         console.log(this.resourceService.getImage(this.configService.playerSprite))
 
@@ -29,7 +29,7 @@ export class GameStateService {
             0,
             4,
             5,
-            2
+            scale ?? 1
         )
 
         this.players.push(player)
