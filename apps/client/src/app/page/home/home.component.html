@@ -1,13 +1,29 @@
-<div class="game-container">
-    <div class="title"> IT'S WORK ( {{loadingMap}} ) </div>
-    <div *ngIf="loadingMapError" class="error">Fait chier ça bug  </div>
-    <div class="canvas-container">
-        <canvas class="main-canvas" #canvas></canvas>
+<div class="">
+
+    <div class="main-title"> WOODBATTLE (Insert Real Name)</div>
+
+    <div *ngIf="!roomLoaded && !loadingRoom">
+        <div>
+            <input [(ngModel)]="roomName">
+        </div>
+        <div>
+            <button (click)="joinOrCreateRoom('create')"> CREATE ROOM </button>
+            <button (click)="joinOrCreateRoom('join')"> JOIN ROOM </button>
+        </div>
     </div>
-    <div class="option-container">
-        Scale:
-        <button (click)="setScale('-')"> - </button>
-        {{scale}}
-        <button (click)="setScale('+')"> + </button>
+
+    <div *ngIf="roomLoaded && room"> 
+        <div class="room-name"> {{room.name}} </div>
+        <div class="users">
+            <div *ngFor="let user of room.users">
+                <div> {{user.name}} </div>
+            </div>
+        </div>
+
+        <button *ngIf="user.name === room.host.name"> LAUNCH GAME</button>
     </div>
+
+    <div *ngIf="!roomLoaded && loadingRoom"> Loading...</div>
+    
+
 </div>

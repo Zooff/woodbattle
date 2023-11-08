@@ -3,6 +3,7 @@ import { PlayerCharacter } from '@woodbattle/client'
 import { Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
+import { SocketService } from "./socket.service";
 
 @Injectable({
     providedIn: 'root'
@@ -13,8 +14,9 @@ export class GameStateService {
 
     constructor(
         private configService: ConfigService,
-        private resourceService: ResourceService
-    ) {}git 
+        private resourceService: ResourceService,
+        private socketService: SocketService
+    ) {}
 
 
     createPlayer( position: Vector2, scale: number) {
@@ -33,6 +35,8 @@ export class GameStateService {
         )
 
         this.players.push(player)
+
+        this.socketService.sendMessage()
 
     }
 

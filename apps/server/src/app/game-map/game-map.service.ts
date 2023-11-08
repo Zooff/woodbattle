@@ -34,6 +34,7 @@ export class GameMapService {
         }
 
         if (namedMap) {
+            console.log(path.join(process.cwd(), namedMap))
             const filePath = path.join(process.cwd(), namedMap)
             const map: any = await new Promise((resolve, reject) => {
                 tmxParser.parseFile(filePath, function(err, loadedMap) {
@@ -59,7 +60,6 @@ export class GameMapService {
             }
 
             for (const tileset of map.tileSets) {
-                console.log(tileset)
                 formatedMap.tileset.push({
                     firstGid: tileset.firstGid,
                     lastGid: tileset.firstGid + tileset.tiles.length,

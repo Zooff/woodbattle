@@ -1,6 +1,6 @@
 import { v1 as uuid } from 'uuid'
 
-export class Lobby {
+export class Room implements Room {
 
     private id: string
 

@@ -1,0 +1,13 @@
+<div class="game-container">
+    <div class="title"> IT'S WORK ( {{loadingMap}} ) --- FPS : {{fps}} </div>
+    <div *ngIf="loadingMapError" class="error">Fait chier ça bug  </div>
+    <div class="canvas-container">
+        <canvas class="main-canvas" #canvas></canvas>
+    </div>
+    <div class="option-container">
+        Scale:
+        <button (click)="setScale('-')"> - </button>
+        {{scale}}
+        <button (click)="setScale('+')"> + </button>
+    </div>
+</div>

@@ -1,112 +1,63 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild } from '@angular/core';
-import { GameMapService } from '../../service/game-map.service';
-import { GameMap, Vector2 } from '@woodbattle/shared/model';
-import { ResourceService } from '../../service/resource.service';
-import { switchMap } from 'rxjs';
-import { GameStateService } from '../../service/game-state.service';
+import { Component, OnInit } from '@angular/core';
+import { SocketService } from '../../service/socket.service';
+import { UserService } from '../../service/user.service';
+import { Room, User } from '@woodbattle/shared/model';
 
 @Component({
   selector: 'woodbattle-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent implements OnInit, AfterViewInit {
+export class HomeComponent implements OnInit {
 
-  @ViewChild('canvas', { static: false })
-  public mainCanvas: ElementRef<HTMLCanvasElement> | null = null
-  public context: CanvasRenderingContext2D | null = null
+  public roomName: string = ''
 
-  private canvasWidth: number = 0
-  private canvasHeight: number = 0
+  public room!: Room
 
-  public loadingMap: boolean = true
-  public loadingMapError: boolean = false
+  public roomLoaded: boolean = false
+  public loadingRoom: boolean = false
 
-  private actualMap: GameMap | null = null
+  public errorGettingRoom = false
 
-  public scale: number = 4
+  public user!: User
 
   constructor(
-    private gameMapService: GameMapService,
-    private gameStateService: GameStateService,
-    private ressourceService: ResourceService,
-    private ngZone: NgZone
-  ) { }
+    private socketService: SocketService,
+    private userService: UserService
+    ) {}
 
   ngOnInit(): void {
-    this.gameMapService.getShopMap().subscribe({
-      next: (shopmap: GameMap) => {
-        this.loadingMap = false
-        this.actualMap = shopmap
-        this.canvasWidth = shopmap.width * shopmap.tileWidth * this.scale
-        this.canvasHeight = shopmap.height * shopmap.tileHeight * this.scale
-
-        this.initGame()
+    this.user = this.userService.createUser()
+    this.socketService.onReceiveLobbyMessage().subscribe({
+      next: (payload) => {
+        console.log(payload)
+        this.loadingRoom = false
+        this.room = payload.room!
+        this.roomLoaded = true
       },
-      error: (err) => {
-        console.error(err)
-        this.loadingMap = false
-        this.loadingMapError = true;
+      error: () => {
+        this.loadingRoom = false
+        this.errorGettingRoom = true
       }
-    }
-    )
-  }
-
-  ngAfterViewInit(): void {
-    if (this.mainCanvas) {
-      this.context = this.mainCanvas.nativeElement.getContext('2d')
-      this.context?.fillRect(0, 0, this.mainCanvas.nativeElement.width, this.mainCanvas.nativeElement.height)
-    }
-
-  }
-
-
-  gameLoop(delta?: number) {
-
-    if (!this.context || !this.actualMap) return
-
-    this.mainCanvas!.nativeElement.width = this.actualMap.width * this.actualMap.tileWidth * this.scale
-    this.mainCanvas!.nativeElement.height = this.actualMap.height * this.actualMap.tileHeight * this.scale
-
-    this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
-
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
-
-    for (const player of this.gameStateService.getAllPlayers()) {
-      player.setScale(this.scale)
-      player.draw(this.context)
-    }
-
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'tree', this.scale)
-
-    // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
-    // this.mainCanvas!.nativeElement.height = this.canvasHeight * 2
-    // this.context?.scale(2, 2)
-
-    window.requestAnimationFrame(this.gameLoop.bind(this))
-  }
-
-  initGame() {
-    if (!this.mainCanvas) return
-
-    console.log('INIT GAME')
-
-    this.mainCanvas.nativeElement.width = this.canvasWidth
-    this.mainCanvas.nativeElement.height = this.canvasHeight
-
-    this.gameStateService.createPlayer(new Vector2(40, 40), this.scale)
-
-
-    this.ngZone.runOutsideAngular(() => {
-      this.gameLoop()
     })
   }
 
-
-  setScale(op: string) {
-
-    if (op === '-' && this.scale > 1) this.scale--
-    if (op === '+') this.scale++
+  setUserName(name: string) {
+    this.userService.setUserName(name)
   }
+
+  joinOrCreateRoom(action: string) {
+    if (this.roomName === '') return 
+
+    this.loadingRoom = true
+    if (action === 'join') {
+      this.socketService.joinRoom(this.roomName)
+    }
+    if (action === 'create') {
+      this.socketService.createRoom(this.roomName)
+    }
+  }
+
+
 
 }
