@@ -10,9 +10,9 @@ export class LobbyGatewayGateway implements OnGatewayDisconnect {
 
   constructor(private lobbyService: LobbyService) { }
 
-  @SubscribeMessage('ping')
+  @SubscribeMessage('latency')
   handleMessage(client: any, payload: any) {
-    this.server.emit('ping', 'pong')
+    this.server.to(client.id).emit('latency', 'pong')
   }
 
   @SubscribeMessage('lobby')

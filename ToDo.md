@@ -5,10 +5,12 @@
     - [x] Gestion des erreur Front End 
     - [x] empecher obsevable complete lobby on error
     - [x] Rediriger sur le game component
-    - [] Rediriger les events dans le service
+    - [] Rediriger les events dans le lobby service
 - Game
-    - [] Calculer bon ratio
+    - [x] Calculer bon ratio
     - [] creation character dans le server
+    - [] mouvement
+    - [] attaque
 
 
 - Art

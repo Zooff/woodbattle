@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { ClientLobbyMessage, DefaultClientMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
+import { ClientLobbyMessage, DefaultClientMessage, ServerGameMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
 import { Socket } from "ngx-socket-io";
 import { UserService } from "./user.service";
 import { Observable, interval, of, switchMap, tap, throwError } from "rxjs";
@@ -12,6 +12,9 @@ export class SocketService {
 
     ping: number = 0
 
+    latencyObs: any = null
+    lastLatencyCall: number = 0
+
     constructor(
         private socket: Socket,
         private userService: UserService,
@@ -20,21 +23,19 @@ export class SocketService {
         this.socket.on('connect', () => {
             this.userService.setSocketId(this.socket.ioSocket.id)
             console.log(this.userService.getActualUser())
+            this.latencyObs = interval(5000).pipe(
+                tap(() => {
+                    this.lastLatencyCall = performance.now()
+                    this.socket.emit('latency')
+                })).subscribe()
         })
     }
 
     getLatency() {
         let now = performance.now()
-        return interval(5000).pipe(
-            tap( () => {
-                now = performance.now()
-                this.socket.emit('ping')
-            }),
+        return this.socket.fromEvent('latency').pipe(
             switchMap(() => {
-                return this.socket.fromEvent('ping')
-            }),
-            switchMap(() => {
-                return of(performance.now() - now)
+                return of(performance.now() - this.lastLatencyCall)
             })
         )
     }
@@ -111,7 +112,7 @@ export class SocketService {
         this.socket.emit('client-ready', message)
     }
 
-    onReceiveGameStart() {
+    onReceiveGameStart(): Observable<ServerGameMessage> {
         return this.socket.fromEvent('game-start')
     }
 

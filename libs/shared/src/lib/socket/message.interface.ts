@@ -1,4 +1,5 @@
 import { User } from "../user/user.interface"
+import { GameObject } from "../utils/game-object.interface"
 import { Room } from "./room.interface"
 
 export interface DefaultClientMessage {
@@ -19,4 +20,10 @@ export interface ServerLobbyMessage {
 
 export interface ClientGameReadyMessage extends DefaultClientMessage {
    
+}
+
+export interface ServerGameMessage {
+    action: 'init-game' | 'update-game' | 'update-map' | 'end-game'
+    playerCharacters: {[id: string]: GameObject}
+    actualMap: string
 }

@@ -1,29 +1,41 @@
 import { Injectable } from "@angular/core";
 import { PlayerCharacter } from '@woodbattle/client'
-import { Vector2 } from "@woodbattle/shared/model";
+import { IGame, Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
 import { SocketService } from "./socket.service";
+import { SettingsService } from "./settings.service";
 
 @Injectable({
     providedIn: 'root'
 })
-export class GameStateService {
+export class GameStateService implements IGame {
 
-    private players: PlayerCharacter[] = []
+    public playerCharacters: {[id: string]: PlayerCharacter} = {}
+    public actualMap: string = '';
+    public spawnPosition: Vector2[] = [];
 
     constructor(
         private configService: ConfigService,
         private resourceService: ResourceService,
-        private socketService: SocketService
+        private socketService: SocketService,
+        private settingsService: SettingsService
     ) {}
 
 
-    createPlayer( position: Vector2, scale: number) {
+
+    init(game: IGame) {
+        console.log(game)
+        for (const player in game.playerCharacters) {
+            this.playerCharacters[player] = this.createPlayer(game.playerCharacters[player].position, this.settingsService.scale)
+        }
+    }
+
+    private createPlayer( position: Vector2, scale: number) {
 
         console.log(this.resourceService.getImage(this.configService.playerSprite))
 
-        const player = new PlayerCharacter(
+        return new PlayerCharacter(
             position,
             this.resourceService.getImage(this.configService.playerSprite)!,
             0,
@@ -34,13 +46,9 @@ export class GameStateService {
             scale ?? 1
         )
 
-        this.players.push(player)
-
-        this.socketService.sendMessage()
-
     }
 
     getAllPlayers() {
-        return this.players
+        return this.playerCharacters
     }
 }

@@ -1,7 +1,7 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { GameService } from './game.service';
 import { Socket, Server } from 'socket.io';
-import { DefaultClientMessage } from '@woodbattle/shared/model';
+import { DefaultClientMessage, ServerGameMessage } from '@woodbattle/shared/model';
 
 @WebSocketGateway()
 export class GameGateway {
@@ -13,7 +13,13 @@ export class GameGateway {
   @SubscribeMessage('client-ready')
   handleClientReady(client: any, payload: DefaultClientMessage) {
     if (this.gameService.setUserReady(payload.roomName, payload.user.id)) {
-        this.server.to(payload.roomName).emit('game-start')
+        const game = this.gameService.getGame(payload.roomName)
+        const serverPayload: ServerGameMessage = {
+          action: 'init-game',
+          playerCharacters: game.players,
+          actualMap: game.map
+        }
+        this.server.to(payload.roomName).emit('game-start', serverPayload)
     }
   }
 

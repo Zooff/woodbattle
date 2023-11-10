@@ -36,4 +36,12 @@ export class GameService {
         return false
     }
 
+    getGame(roomName: string) {
+        const game = this.games[roomName]
+        return {
+            players: game.getPlayers(),
+            map: game.actualMap
+        }
+    } 
+
 }
