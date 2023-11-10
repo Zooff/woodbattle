@@ -1,6 +1,7 @@
-<div class="">
+<div class="lobby-container">
 
     <div class="main-title"> WOODBATTLE (Insert Real Name)</div>
+    <woodbattle-latency></woodbattle-latency>
 
     <div *ngIf="!roomLoaded && !loadingRoom">
         <div>
@@ -20,10 +21,13 @@
             </div>
         </div>
 
-        <button *ngIf="user.name === room.host.name"> LAUNCH GAME</button>
+        <button *ngIf="user.id === room.host.id" (click)="startGame()"> LAUNCH GAME</button>
+        <button (click)="leaveRoom()"> LEAVE ROOM </button>
     </div>
 
     <div *ngIf="!roomLoaded && loadingRoom"> Loading...</div>
+
+    <div *ngIf="errorGettingRoom"> {{errorName}}</div>
     
 
 </div>

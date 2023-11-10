@@ -18,7 +18,7 @@ export class ResourceService {
     if (this.imgRessources[name]) return
 
     const img: HTMLImageElement = new Image()
-    img.src = '/assets/image/' + name + '.png'
+    img.src = '/assets/sprite/' + name + '.png'
 
     this.imgRessources[name] = { image: img, loaded: false }
     img.onload = () => { this.imgRessources[name].loaded = true }
@@ -28,7 +28,7 @@ export class ResourceService {
     return from(names).pipe(
       mergeMap((name: string) => {
         const img: HTMLImageElement = new Image()
-        img.src = '/assets/image/' + name + '.png'
+        img.src = '/assets/sprite/' + name + '.png'
         this.imgRessources[name] = {image: img, loaded: false}
         return fromEvent(img, 'load').pipe(
           tap(() => {

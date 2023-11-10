@@ -1,22 +1,42 @@
 import { Injectable } from "@angular/core";
-import { ClientLobbyMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
+import { ClientLobbyMessage, DefaultClientMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
 import { Socket } from "ngx-socket-io";
 import { UserService } from "./user.service";
-import { Observable, tap, throwError } from "rxjs";
+import { Observable, interval, of, switchMap, tap, throwError } from "rxjs";
+import { LobbyService } from "./lobby.service";
 
 @Injectable({
     providedIn: 'root'
 })
 export class SocketService {
 
+    ping: number = 0
+
     constructor(
         private socket: Socket,
-        private userService: UserService
+        private userService: UserService,
+        private lobbyService: LobbyService
     ) {
         this.socket.on('connect', () => {
             this.userService.setSocketId(this.socket.ioSocket.id)
             console.log(this.userService.getActualUser())
         })
+    }
+
+    getLatency() {
+        let now = performance.now()
+        return interval(5000).pipe(
+            tap( () => {
+                now = performance.now()
+                this.socket.emit('ping')
+            }),
+            switchMap(() => {
+                return this.socket.fromEvent('ping')
+            }),
+            switchMap(() => {
+                return of(performance.now() - now)
+            })
+        )
     }
 
     sendMessage() {
@@ -47,16 +67,52 @@ export class SocketService {
         this.socket.emit('lobby', message)
     }
 
+    leaveRoom(roomName: string) {
+        const message: ClientLobbyMessage = {
+            action: "leave",
+            user: this.userService.getActualUser(),
+            roomName: roomName,
+            createdAt: Date.now()
+        }
+        this.socket.emit('lobby', message)
+    }
+
     onReceiveLobbyMessage(): Observable<ServerLobbyMessage> {
-        const obs = this.socket.fromEvent('lobby') as Observable<ServerLobbyMessage>
-        return obs.pipe(
-            tap((payload: ServerLobbyMessage) => {
-                console.log(payload)
-                if (payload.action === 'error') {
-                    throwError(() => new Error(payload.error))
-                }
-            })
-        )
+        return this.socket.fromEvent('lobby')
+        // return obs.pipe(
+        // const obs = this.socket.fromEvent('lobby') as Observable<ServerLobbyMessage>
+        // return obs.pipe(
+        //     switchMap((payload: ServerLobbyMessage) => {
+        //         console.log(payload)
+        //         if (payload.action === 'error') {
+        //             return throwError(() => new Error(payload.error))
+        //         }
+        //         return of(payload)
+        //     })
+        // )
+    }
+
+    startGame(roomName: string) {
+        const message: ClientLobbyMessage = {
+            action: "start",
+            user: this.userService.getActualUser(),
+            roomName: roomName,
+            createdAt: Date.now()
+        }
+        this.socket.emit('lobby', message)
+    }
+
+    isReady() {
+        const message: DefaultClientMessage = {
+            user: this.userService.getActualUser(),
+            roomName: this.lobbyService.room.name,
+            createdAt: Date.now()
+        }
+        this.socket.emit('client-ready', message)
+    }
+
+    onReceiveGameStart() {
+        return this.socket.fromEvent('game-start')
     }
 
 }

@@ -1,7 +1,7 @@
 import { inject } from "@angular/core";
 import { ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot } from "@angular/router";
 import { take } from "rxjs";
-import { ResourceService } from "./resource.service";
+import { ResourceService } from "../service/resource.service";
 
 const DEFAULT_RESSOURCE = ['swordman']
 

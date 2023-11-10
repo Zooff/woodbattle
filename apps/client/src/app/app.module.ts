@@ -9,18 +9,28 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
 import { HomeComponent } from './page/home/home.component';
+import { LatencyComponent } from './component/latency/latency.component';
+import { LoadingComponent } from './component/loading/loading.component';
 
 const socketConfig: SocketIoConfig = {
   url: 'http://localhost:3000',
 };
 
 @NgModule({
-  declarations: [AppComponent, GameComponent, HomeComponent],
+  declarations: [
+    AppComponent,
+    GameComponent,
+    HomeComponent,
+    LatencyComponent,
+    LoadingComponent,
+  ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpClientModule,
-    RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
+    RouterModule.forRoot(appRoutes, {
+      initialNavigation: 'enabledBlocking'
+    }),
     SocketIoModule.forRoot(socketConfig),
   ],
   providers: [],

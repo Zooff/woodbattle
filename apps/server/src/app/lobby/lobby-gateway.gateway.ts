@@ -3,56 +3,74 @@ import { LobbyService } from './lobby.service';
 import { ClientLobbyMessage, Room, ServerLobbyMessage } from '@woodbattle/shared/model';
 import { Socket, Server } from 'socket.io';
 
-@WebSocketGateway({cors: true})
+@WebSocketGateway({ cors: true })
 export class LobbyGatewayGateway implements OnGatewayDisconnect {
 
   @WebSocketServer() server: Server
 
-  constructor(private lobbyService: LobbyService) {}
+  constructor(private lobbyService: LobbyService) { }
 
-  @SubscribeMessage('message')
+  @SubscribeMessage('ping')
   handleMessage(client: any, payload: any) {
-    console.log('Connection Ok')
-    this.server.emit('message', 'Hello world')
+    this.server.emit('ping', 'pong')
   }
 
   @SubscribeMessage('lobby')
-  handleLobbyEvent(client: any, payload: ClientLobbyMessage) {
+  handleLobbyEvent(client: Socket, payload: ClientLobbyMessage) {
     let room
     let serverPayload: ServerLobbyMessage
     console.log(payload)
     try {
-      if (payload.action === 'create') {
-        room = this.lobbyService.createNewRoom(payload.roomName, payload.user)
-      }
-      else if (payload.action === 'join') {
-        room = this.lobbyService.joinRoom(payload.roomName, payload.user)
-      }
-  
-      if (!room) {
-        serverPayload = {
-          action: 'error',
-          error: 'Unknow Error'
+      switch (payload.action) {
+        case 'create':
+          room = this.lobbyService.createNewRoom(payload.roomName, payload.user)
+          serverPayload = {
+            action: 'connect',
+            room: room
+          }
+          this.server.in(client.id).socketsJoin(room.name)
+          break
+        case 'join':
+          room = this.lobbyService.joinRoom(payload.roomName, payload.user)
+          serverPayload = {
+            action: 'join',
+            room: room
+          }
+          this.server.in(client.id).socketsJoin(room.name)
+          break
+        case 'leave':
+          room = this.lobbyService.leaveRoom(payload.roomName, client.id)
+          serverPayload = {
+            action: 'leave',
+            room: room
+          }
+
+          this.server.in(client.id).socketsLeave(room.name)
+          this.server.to(client.id).emit('lobby', { action: 'disconnect' })
+          break
+        case 'start': {
+          room = this.lobbyService.startGame(payload.roomName, client.id)
+          serverPayload = {
+            action: 'start',
+            room: room
+          }
+          break;
         }
+        default:
+          throw 'NO_PERMITTED_ACTION'
       }
 
-      serverPayload = {
-        action: 'connect',
-        room: room
-      }
-      this.server.socketsJoin(room.name)
+      this.server.to(payload.roomName).emit('lobby', serverPayload)
+
     }
-    catch (err) {  
+    catch (err) {
       serverPayload = {
         action: 'error',
         error: err
       }
+
+      this.server.to(client.id).emit('lobby', serverPayload)
     }
-    finally {
-      console.log(serverPayload)
-      this.server.emit('lobby', serverPayload)
-    }
-    
   }
 
   sendDisconnect(room: Room) {
@@ -67,6 +85,7 @@ export class LobbyGatewayGateway implements OnGatewayDisconnect {
   handleDisconnect(socket: Socket) {
     console.log(socket.id)
     const rooms = this.lobbyService.removeFromAllRoom(socket.id)
+    console.log(rooms)
     for (const room of rooms) {
       this.sendDisconnect(room)
     }

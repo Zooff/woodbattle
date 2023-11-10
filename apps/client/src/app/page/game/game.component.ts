@@ -4,6 +4,9 @@ import { GameMap, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
 import { GameStateService } from '../../service/game-state.service';
+import { ActivatedRoute } from '@angular/router';
+import { loadingService } from '../../service/loading.service';
+import { SocketService } from '../../service/socket.service';
 
 @Component({
   selector: 'woodbattle-home',
@@ -33,26 +36,43 @@ export class GameComponent implements OnInit, AfterViewInit {
     private gameMapService: GameMapService,
     private gameStateService: GameStateService,
     private ressourceService: ResourceService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private route: ActivatedRoute,
+    private loadingService: loadingService,
+    private socketService: SocketService
   ) { }
 
   ngOnInit(): void {
-    this.gameMapService.getShopMap().subscribe({
-      next: (shopmap: GameMap) => {
-        this.loadingMap = false
-        this.actualMap = shopmap
-        this.canvasWidth = shopmap.width * shopmap.tileWidth * this.scale
-        this.canvasHeight = shopmap.height * shopmap.tileHeight * this.scale
+    this.socketService.onReceiveGameStart().subscribe(() => {
+      this.loadingService.hide()
+      this.initGame()
+    })
+    this.actualMap = this.route.snapshot.data['shopMap']
 
-        this.initGame()
-      },
-      error: (err) => {
-        console.error(err)
-        this.loadingMap = false
-        this.loadingMapError = true;
-      }
-    }
-    )
+    this.calculateScale(this.actualMap!.width * this.actualMap!.tileWidth, this.actualMap!.height * this.actualMap!.tileHeight)
+
+    this.canvasWidth = this.actualMap!.width * this.actualMap!.tileWidth * this.scale
+    this.canvasHeight = this.actualMap!.height * this.actualMap!.tileHeight * this.scale
+    // this.gameMapService.getShopMap().subscribe({
+    //   next: (shopmap: GameMap) => {
+    //     this.loadingMap = false
+    //     this.actualMap = shopmap
+    //     this.canvasWidth = shopmap.width * shopmap.tileWidth * this.scale
+    //     this.canvasHeight = shopmap.height * shopmap.tileHeight * this.scale
+
+    //     // this.initGame()
+    //   },
+    //   error: (err) => {
+    //     console.error(err)
+    //     this.loadingMap = false
+    //     this.loadingMapError = true;
+    //   }
+    // }
+    // )
+    
+    this.socketService.isReady()
+
+   
   }
 
   ngAfterViewInit(): void {
@@ -100,7 +120,10 @@ export class GameComponent implements OnInit, AfterViewInit {
     this.mainCanvas.nativeElement.width = this.canvasWidth
     this.mainCanvas.nativeElement.height = this.canvasHeight
 
-    this.gameStateService.createPlayer(new Vector2(40, 40), this.scale)
+    const x = Math.floor(Math.random() * (60 - 10 + 1))
+    const y = Math.floor(Math.random() * (60 - 10 + 1))
+
+    this.gameStateService.createPlayer(new Vector2(x, y), this.scale)
 
     this.lastRun = performance.now()
     this.ngZone.runOutsideAngular(() => {
@@ -113,6 +136,13 @@ export class GameComponent implements OnInit, AfterViewInit {
 
     if (op === '-' && this.scale > 1) this.scale--
     if (op === '+') this.scale++
+  }
+
+  private calculateScale(width: number, height:number) {
+    console.log(Math.min(width, window.innerWidth) / Math.max(height, window.innerWidth))
+    this.scale *= Math.min(width, window.innerWidth) / Math.max(height, window.innerWidth)
+    console.log(this.scale)
+    this.scale = Math.round(this.scale)
   }
 
 }
