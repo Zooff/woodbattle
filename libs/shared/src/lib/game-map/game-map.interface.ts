@@ -1,3 +1,5 @@
+import { Vector2 } from "../utils/vector2"
+
 export interface TileSet {
     firstGid: number,
     lastGid: number,
@@ -25,5 +27,6 @@ export interface GameMap {
     tileHeight: number,
     layers: Layer[],
     tileset: TileSet[]
+    spawnPoint: Vector2[]
 }
 

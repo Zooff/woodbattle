@@ -1,7 +1,9 @@
-import { GameObject, Vector2 } from "@woodbattle/shared/model";
+import { IPlayerCharacters, Vector2 } from "@woodbattle/shared/model";
 import { Sprite } from "./sprite";
 
-export class PlayerCharacter extends Sprite implements GameObject {
+export class PlayerCharacter extends Sprite implements IPlayerCharacters {
+
+    speed: number
 
     constructor (
         position: Vector2,
@@ -11,9 +13,11 @@ export class PlayerCharacter extends Sprite implements GameObject {
         frameSpace: number,
         vFrame: number,
         hFrame: number,
-        scale: number
+        scale: number,
+        speed: number
     ) {
         super(position, image, frame, frameSize, frameSpace, vFrame, hFrame, scale)
+        this.speed = speed ?? 10
     }
 
 }

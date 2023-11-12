@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnInit, ViewChild } from '@angular/core';
 import { GameMapService } from '../../service/game-map.service';
-import { GameMap, IGame, Vector2 } from '@woodbattle/shared/model';
+import { GameMap, IGame, IPlayerCharacters, PlayerInput, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
 import { GameStateService } from '../../service/game-state.service';
@@ -8,6 +8,9 @@ import { ActivatedRoute } from '@angular/router';
 import { loadingService } from '../../service/loading.service';
 import { SocketService } from '../../service/socket.service';
 import { SettingsService } from '../../service/settings.service';
+import { ConfigService } from '../../service/config.service';
+import { KeyboardManager } from '../../service/keyboardManager.service';
+import { PlayerCharacter } from '@woodbattle/client';
 
 @Component({
   selector: 'woodbattle-home',
@@ -19,6 +22,15 @@ export class GameComponent implements OnInit, AfterViewInit {
   @HostListener('window:resize')
   onResize() {
     this.calculateScale(this.actualMap!.width * this.actualMap!.tileWidth, this.actualMap!.height * this.actualMap!.tileHeight)
+  }
+
+  @HostListener('window:keyup', ['$event'])
+  keyUpEvent(event: KeyboardEvent) {
+    this.keyboardManager.keyUp(event)
+  }
+  @HostListener('window:keydown', ['$event'])
+  keyDownEvent(event: KeyboardEvent) {
+    this.keyboardManager.keyDown(event)
   }
 
   @ViewChild('canvas', { static: false })
@@ -38,6 +50,9 @@ export class GameComponent implements OnInit, AfterViewInit {
   private lastRun: number = 0
   public fps: number = 0
 
+  private lastUpdate: number = 0
+  private updateTime: number = 0
+
 
   constructor(
     private gameMapService: GameMapService,
@@ -47,7 +62,9 @@ export class GameComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private loadingService: loadingService,
     private socketService: SocketService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private configService: ConfigService,
+    private keyboardManager: KeyboardManager
   ) { }
 
   ngOnInit(): void {
@@ -58,6 +75,12 @@ export class GameComponent implements OnInit, AfterViewInit {
           this.initGame(payload)
       }
 
+    })
+
+    this.socketService.onReceiveGameUpdate().subscribe((payload) => {
+      if (payload.action === 'update-game') {
+        this.gameStateService.playerCharacters = payload.playerCharacters as any
+      }
     })
     this.actualMap = this.route.snapshot.data['shopMap']
 
@@ -111,7 +134,7 @@ export class GameComponent implements OnInit, AfterViewInit {
     this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
 
     const players = this.gameStateService.getAllPlayers()
-    console.log(players)
+    // console.log(players)
     for (const player in players) {
       players[player].setScale(this.scale)
       players[player].draw(this.context)
@@ -124,6 +147,20 @@ export class GameComponent implements OnInit, AfterViewInit {
     // this.context?.scale(2, 2)
 
     window.requestAnimationFrame(this.gameLoop.bind(this))
+  }
+
+  updateLoop() {
+
+    this.updateTime = this.lastUpdate - performance.now()
+    this.lastUpdate = performance.now()
+
+    const inputToSend: Partial<PlayerInput> = this.keyboardManager.sendPlayerInput()
+    if (Object.keys(inputToSend).length > 0) {
+      this.socketService.updateInput(inputToSend)
+    }
+   
+
+    setTimeout( this.updateLoop.bind(this), this.configService.framerate) 
   }
 
   initGame(game: any) {
@@ -142,7 +179,10 @@ export class GameComponent implements OnInit, AfterViewInit {
     // this.gameStateService.createPlayer(new Vector2(x, y), this.scale)
 
     this.lastRun = performance.now()
+    this.lastUpdate = performance.now()
+
     this.ngZone.runOutsideAngular(() => {
+      this.updateLoop()
       this.gameLoop(this.lastRun)
     })
   }
@@ -155,7 +195,6 @@ export class GameComponent implements OnInit, AfterViewInit {
   }
 
   private calculateScale(width: number, height: number) {
-    console.log((window.innerWidth / width, window.innerHeight / height))
     this.scale = Math.round(Math.min(window.innerWidth / width, window.innerHeight / height))
     this.settingsService.scale = this.scale
   }

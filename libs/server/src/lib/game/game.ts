@@ -1,5 +1,6 @@
-import {GameObject, IGame, User, Vector2} from '@woodbattle/shared/model'
+import {GameObject, IGame, PlayerInput, User, Vector2} from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
+import { Observable, Subject } from 'rxjs'
 
 export class Game implements IGame {
     
@@ -7,31 +8,53 @@ export class Game implements IGame {
     public roomName: string
     public actualMap: string = ''
 
+    public playerCharacters: {[id: string]: ServerPlayerCharacter} = {}
+
+    public spawnPosition: Vector2[] = []
+
     private framerate: number
 
     private tickInterval!: NodeJS.Timer
 
     private gameObjects: GameObject[] = []
 
-    public playerCharacters: {[id: string]: ServerPlayerCharacter} = {}
+    private playersInputs: {[id: string]: PlayerInput} = {}
 
-    public spawnPosition: Vector2[] = []
+    private source: Subject<any> = new Subject<any>()
+    public $update: Observable<any> = new Observable<any>()
 
-    constructor( users: User[], roomName: string, framerate?: number) {
+    
+
+    constructor( users: User[], roomName: string, spawns: Vector2[], framerate?: number) {
         this.users = {}
-        for (const user of users) {
-            this.users[user.id] = user
-            this.playerCharacters[user.id] = {
-                user: user,
-                position: new Vector2(Math.floor(Math.random() * (100 - 10 + 1)), Math.floor(Math.random() * (60 - 10 + 1)) ),
+        this.spawnPosition = spawns
+        for (let i = 0; i < users.length; i++) {
+            this.users[users[i].id] = users[i]
+            this.playerCharacters[users[i].id] = {
+                user: users[i],
+                position: this.spawnPosition[i % this.spawnPosition.length],
                 isMoving: false,
-                isAttacking: false
+                isAttacking: false,
+                speed: 10
+            }
+            this.playersInputs[users[i].id] = {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+
+                attack: false,
+                parry: false,
+                dash: false,
+                action1: false
             }
         }
         this.roomName = roomName
         this.framerate = framerate || 15
 
         this.actualMap = 'shop'
+
+        this.$update = this.source.asObservable()
     }
 
 
@@ -45,17 +68,58 @@ export class Game implements IGame {
 
         if (!start) return false
 
+        this.tick()
         return true
     }
 
     public tick() {
 
+        this.movePlayers()
 
-
-        this.tickInterval = setInterval(this.tick, this.framerate)
+        const update = {
+            playerCharacters: this.playerCharacters
+        }
+        this.source.next(update)
+        this.tickInterval = setTimeout(this.tick.bind(this), this.framerate)
     }
 
     public getPlayers() {
         return this.playerCharacters
+    }
+
+    public setPlayerInputs(userId: string, playerInput: Partial<PlayerInput>) {
+
+        console.log('SET INPUT', userId, playerInput)
+
+        if (!this.playersInputs[userId]) return
+        for (const input in playerInput) {
+            this.playersInputs[userId][input as keyof PlayerInput] = playerInput[input as keyof PlayerInput]
+        }
+    }
+
+    private movePlayers() {
+        for (const id in this.playerCharacters) {
+            let player: ServerPlayerCharacter = this.playerCharacters[id]
+
+            if (!player) continue
+            if (this.playersInputs[id].up) [
+                player.position.y += player.speed
+            ]
+            if (this.playersInputs[id].down) [
+                player.position.y -= player.speed
+            ]
+            if (this.playersInputs[id].right) [
+                player.position.x += player.speed
+            ]
+            if (this.playersInputs[id].left) [
+                player.position.x -= player.speed
+            ]
+
+            console.log(player.position)
+        }
+    }
+
+    public destroy() {
+        clearTimeout(this.tickInterval)
     }
 }

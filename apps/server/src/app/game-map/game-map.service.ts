@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { GameMap, Layer } from '@woodbattle/shared/model'
+import { GameMap, Layer, Vector2 } from '@woodbattle/shared/model'
 import path from 'path';
 
 const tmxParser = require('tmx-parser')
 
-const SHOP_MAP_PATH = './apps/server/src/assets/minimalist.tmx'
+const SHOP_MAP_PATH = './apps/server/src/assets/shop.tmx'
 
 let shopMap: GameMap = null
 
@@ -30,7 +30,8 @@ export class GameMapService {
             tileWidth: null,
             tileHeight: null,
             layers: [],
-            tileset: []
+            tileset: [],
+            spawnPoint: []
         }
 
         if (namedMap) {
@@ -51,12 +52,21 @@ export class GameMapService {
             formatedMap.tileWidth = map.tileWidth
     
             for (const layer of map.layers)  {
-                
-                const formatedLayer: Layer = {
-                    tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
-                    name: layer.name
+                if (layer.type === 'tile') {
+                    const formatedLayer: Layer = {
+                        tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
+                        name: layer.name
+                    }
+                    formatedMap.layers.push(formatedLayer)
                 }
-                formatedMap.layers.push(formatedLayer)
+                else if (layer.type === 'object') {
+                    if (layer.name === 'Spawn') {
+                        for (const object of layer.objects) {
+                            formatedMap.spawnPoint.push(new Vector2(object.x, object.y))
+                        }
+                    }
+                }
+               
             }
 
             for (const tileset of map.tileSets) {

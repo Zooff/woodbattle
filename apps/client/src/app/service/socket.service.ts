@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { ClientLobbyMessage, DefaultClientMessage, ServerGameMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
+import { ClientInputMessage, ClientLobbyMessage, DefaultClientMessage, PlayerInput, ServerGameMessage, ServerLobbyMessage } from "@woodbattle/shared/model";
 import { Socket } from "ngx-socket-io";
 import { UserService } from "./user.service";
 import { Observable, interval, of, switchMap, tap, throwError } from "rxjs";
@@ -114,6 +114,20 @@ export class SocketService {
 
     onReceiveGameStart(): Observable<ServerGameMessage> {
         return this.socket.fromEvent('game-start')
+    }
+
+    onReceiveGameUpdate(): Observable<ServerGameMessage> {
+        return this.socket.fromEvent('game-update')
+    }
+
+    updateInput(input: Partial<PlayerInput>) {
+        const message: ClientInputMessage = {
+            user: this.userService.getActualUser(),
+            roomName: this.lobbyService.room.name,
+            createdAt: Date.now(),
+            playerInput: input
+        }
+        this.socket.emit('client-input-update', message)
     }
 
 }

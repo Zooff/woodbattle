@@ -43,7 +43,7 @@ export class Sprite {
             for (let j = 0; j < this.hFrame; j++) {
                 this.frames.push({
                     position: new Vector2(j, i),
-                    frameSize: new Vector2(20, 32)
+                    frameSize: new Vector2(21, 32)
                 })
             }
         }
@@ -56,8 +56,8 @@ export class Sprite {
             this.frames[this.frame].position.y,
             this.frames[this.frame].frameSize.x,
             this.frames[this.frame].frameSize.y,
-            this.position.x,
-            this.position.y,
+            this.position.x * this.scale,
+            this.position.y * this.scale,
             this.frames[this.frame].frameSize.x * this.scale,
             this.frames[this.frame].frameSize.y * this.scale
         )

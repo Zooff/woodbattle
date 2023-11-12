@@ -6,9 +6,10 @@
     - [x] empecher obsevable complete lobby on error
     - [x] Rediriger sur le game component
     - [] Rediriger les events dans le lobby service
+    - [] Suppression du timer quand game fini (bug)
 - Game
     - [x] Calculer bon ratio
-    - [] creation character dans le server
+    - [x] creation character dans le server
     - [] mouvement
     - [] attaque
 

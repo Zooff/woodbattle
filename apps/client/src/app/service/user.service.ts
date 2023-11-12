@@ -2,7 +2,7 @@ import { Injectable } from "@angular/core";
 import { User } from "@woodbattle/shared/model";
 import { v1 as uuid } from 'uuid'
 
-const names = ['Zooff', 'Rik', 'Atoll', 'Tar']
+const names = ['Zooff', 'Rik', 'Atoll', 'Tar', 'Bloopis', 'Zessim', 'Preugo']
 
 @Injectable({
     providedIn: 'root'

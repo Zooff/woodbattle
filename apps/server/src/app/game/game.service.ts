@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game } from '@woodbattle/server'
-import { User } from '@woodbattle/shared/model';
+import { PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
+import { GameMapService } from '../game-map/game-map.service';
+import { Subscription } from 'rxjs';
+import { GameGateway } from './game.gateway';
 
 @Injectable()
 export class GameService {
@@ -8,19 +11,37 @@ export class GameService {
 
     private games: {[id: string]: Game} = {}
 
-    constructor() {}
+    private gamesUpdate: {[id: string]: Subscription} = {}
+
+    constructor(
+        private gameMapService: GameMapService,
+        @Inject(forwardRef(() => GameGateway))
+        private gameGateway: GameGateway
+    ) {}
 
     getAllGames() {
         return this.games
     }
 
     removeGame( roomName: string ) {
-        delete this.games[roomName]
+        console.log('REMOVE GAME')
+
+        if (this.games[roomName]) {
+            this.games[roomName].destroy()
+            delete this.games[roomName]
+            this.gamesUpdate[roomName].unsubscribe()
+            delete this.gamesUpdate[roomName]
+        }
+       
     }
 
-    initGame(users: User[], roomName: string) {
-        const game = new Game(users, roomName)
+    async initGame(users: User[], roomName: string) {
+        const spawns: Vector2[] = (await this.gameMapService.getShopMap()).spawnPoint
+        const game = new Game(users, roomName, spawns)
         this.games[roomName] = game
+        this.gamesUpdate[roomName] = this.games[roomName].$update.subscribe((update) => {
+            this.gameGateway.updateGame(roomName, update)
+        })
         return game
     }
 
@@ -34,6 +55,10 @@ export class GameService {
             return true
         }
         return false
+    }
+
+    updatePlayerInput(roomName: string, userId: string, input: Partial<PlayerInput>) {
+        this.games[roomName].setPlayerInputs(userId, input)
     }
 
     getGame(roomName: string) {

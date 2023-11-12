@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { PlayerCharacter } from '@woodbattle/client'
-import { IGame, Vector2 } from "@woodbattle/shared/model";
+import { GameObject, IGame, Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
 import { SocketService } from "./socket.service";
@@ -25,15 +25,17 @@ export class GameStateService implements IGame {
 
 
     init(game: IGame) {
-        console.log(game)
         for (const player in game.playerCharacters) {
-            this.playerCharacters[player] = this.createPlayer(game.playerCharacters[player].position, this.settingsService.scale)
+            this.playerCharacters[player] = this.createPlayer(game.playerCharacters[player].position, 
+                game.playerCharacters[player].speed, 
+                this.settingsService.scale
+                )
         }
     }
 
-    private createPlayer( position: Vector2, scale: number) {
+    private createPlayer( position: Vector2, speed: number, scale: number) {
 
-        console.log(this.resourceService.getImage(this.configService.playerSprite))
+        // console.log(this.resourceService.getImage(this.configService.playerSprite))
 
         return new PlayerCharacter(
             position,
@@ -43,7 +45,8 @@ export class GameStateService implements IGame {
             0,
             4,
             5,
-            scale ?? 1
+            scale ?? 1,
+            speed
         )
 
     }

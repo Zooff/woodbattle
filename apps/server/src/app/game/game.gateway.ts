@@ -1,14 +1,17 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { GameService } from './game.service';
 import { Socket, Server } from 'socket.io';
-import { DefaultClientMessage, ServerGameMessage } from '@woodbattle/shared/model';
+import { ClientInputMessage, DefaultClientMessage, ServerGameMessage } from '@woodbattle/shared/model';
+import { Inject, forwardRef } from '@nestjs/common';
 
 @WebSocketGateway()
 export class GameGateway {
 
   @WebSocketServer() server: Server
 
-  constructor(private gameService: GameService) {}
+  constructor(
+    @Inject(forwardRef(() => GameService))
+    private gameService: GameService) {}
 
   @SubscribeMessage('client-ready')
   handleClientReady(client: any, payload: DefaultClientMessage) {
@@ -23,7 +26,18 @@ export class GameGateway {
     }
   }
 
-  sendGameInit(roomName: string) {
+  @SubscribeMessage('client-input-update')
+  handleClientInput(client: any, payload: ClientInputMessage) {
+    this.gameService.updatePlayerInput(payload.roomName, payload.user.id, payload.playerInput)
+  }
 
+  
+  updateGame(roomName: string, update: any) {
+    const serverPayload: ServerGameMessage = {
+      action: 'update-game',
+      playerCharacters: update.playerCharacters,
+      actualMap: update.map
+    }
+    this.server.to(roomName).emit('server-update', serverPayload)
   }
 }

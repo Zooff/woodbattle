@@ -36,15 +36,15 @@ export class LobbyService {
         return this.rooms[index]
     }
 
-    startGame(name: string, socketId: string) {
+    async startGame(name: string, userId: string) {
         const room = this.getRoomByName(name)
 
-        if (socketId !== room.host.socketId) throw 'PLAYER_NOT_HOST'
+        if (userId !== room.host.id) throw 'PLAYER_NOT_HOST'
 
         if (room.hasStarted) throw 'GAME_ALREADY_START'
 
         room.hasStarted = true
-        this.gameService.initGame(room.users, room.name)
+        await this.gameService.initGame(room.users, room.name)
 
         return room
 

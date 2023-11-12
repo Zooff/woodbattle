@@ -8,4 +8,6 @@ export class ConfigService {
     server: string = 'http://localhost:3000/api/'
 
     playerSprite: string = 'swordman'
+
+    framerate = 15
 }  

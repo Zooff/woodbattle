@@ -16,7 +16,7 @@ export class LobbyGatewayGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('lobby')
-  handleLobbyEvent(client: Socket, payload: ClientLobbyMessage) {
+  async handleLobbyEvent(client: Socket, payload: ClientLobbyMessage) {
     let room
     let serverPayload: ServerLobbyMessage
     console.log(payload)
@@ -49,7 +49,7 @@ export class LobbyGatewayGateway implements OnGatewayDisconnect {
           this.server.to(client.id).emit('lobby', { action: 'disconnect' })
           break
         case 'start': {
-          room = this.lobbyService.startGame(payload.roomName, client.id)
+          room = await this.lobbyService.startGame(payload.roomName, payload.user.id)
           serverPayload = {
             action: 'start',
             room: room
@@ -64,6 +64,7 @@ export class LobbyGatewayGateway implements OnGatewayDisconnect {
 
     }
     catch (err) {
+      console.log('Error ', err)
       serverPayload = {
         action: 'error',
         error: err
