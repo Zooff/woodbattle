@@ -1,3 +1,4 @@
+import { IPlayerCharacters } from "../game/game.interface"
 import { PlayerInput } from "../game/playerInput.interface"
 import { User } from "../user/user.interface"
 import { GameObject } from "../utils/game-object.interface"
@@ -25,7 +26,7 @@ export interface ClientGameReadyMessage extends DefaultClientMessage {
 
 export interface ServerGameMessage {
     action: 'init-game' | 'update-game' | 'update-map' | 'end-game'
-    playerCharacters: {[id: string]: GameObject}
+    playerCharacters: {[id: string]: IPlayerCharacters}
     actualMap: string
 }
 

@@ -10,7 +10,8 @@
 - Game
     - [x] Calculer bon ratio
     - [x] creation character dans le server
-    - [] mouvement
+    - [x] mouvement V0
+    - [] Dash
     - [] attaque
 
 

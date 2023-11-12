@@ -38,6 +38,6 @@ export class GameGateway {
       playerCharacters: update.playerCharacters,
       actualMap: update.map
     }
-    this.server.to(roomName).emit('server-update', serverPayload)
+    this.server.to(roomName).emit('game-update', serverPayload)
   }
 }

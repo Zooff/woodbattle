@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Game } from '@woodbattle/server'
-import { PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
+import { IGame, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
 import { GameMapService } from '../game-map/game-map.service';
 import { Subscription } from 'rxjs';
 import { GameGateway } from './game.gateway';
@@ -20,7 +20,16 @@ export class GameService {
     ) {}
 
     getAllGames() {
-        return this.games
+        let resGame: {[id: string]: IGame} = {}
+        for (const room in this.games) {
+            resGame[room] = {
+                actualMap: this.games[room].actualMap,
+                playerCharacters: this.games[room].playerCharacters,
+                spawnPosition: this.games[room].spawnPosition
+            
+            }
+        }
+        return resGame
     }
 
     removeGame( roomName: string ) {
@@ -36,7 +45,8 @@ export class GameService {
     }
 
     async initGame(users: User[], roomName: string) {
-        const spawns: Vector2[] = (await this.gameMapService.getShopMap()).spawnPoint
+        const spawns: Vector2[] = JSON.parse(JSON.stringify((await this.gameMapService.getShopMap()).spawnPoint))
+        console.log('SPawn' , spawns)
         const game = new Game(users, roomName, spawns)
         this.games[roomName] = game
         this.gamesUpdate[roomName] = this.games[roomName].$update.subscribe((update) => {

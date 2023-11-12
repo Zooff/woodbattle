@@ -26,6 +26,7 @@ export class Game implements IGame {
     
 
     constructor( users: User[], roomName: string, spawns: Vector2[], framerate?: number) {
+        console.log('NEW GAME', spawns, users)
         this.users = {}
         this.spawnPosition = spawns
         for (let i = 0; i < users.length; i++) {
@@ -35,7 +36,7 @@ export class Game implements IGame {
                 position: this.spawnPosition[i % this.spawnPosition.length],
                 isMoving: false,
                 isAttacking: false,
-                speed: 10
+                speed: 5
             }
             this.playersInputs[users[i].id] = {
                 up: false,
@@ -55,10 +56,13 @@ export class Game implements IGame {
         this.actualMap = 'shop'
 
         this.$update = this.source.asObservable()
+
+        console.log(this.playerCharacters)
     }
 
 
     public init() {
+        console.log('GAME INIT', this.roomName)
         let start = true
         for (const user in this.users) {
             if (!this.users[user].isReady) {
@@ -72,7 +76,9 @@ export class Game implements IGame {
         return true
     }
 
-    public tick() {
+    private tick() {
+
+        if (this.tickInterval) clearInterval(this.tickInterval)
 
         this.movePlayers()
 
@@ -80,7 +86,7 @@ export class Game implements IGame {
             playerCharacters: this.playerCharacters
         }
         this.source.next(update)
-        this.tickInterval = setTimeout(this.tick.bind(this), this.framerate)
+        this.tickInterval = setTimeout(() => this.tick(), this.framerate)
     }
 
     public getPlayers() {
@@ -88,9 +94,6 @@ export class Game implements IGame {
     }
 
     public setPlayerInputs(userId: string, playerInput: Partial<PlayerInput>) {
-
-        console.log('SET INPUT', userId, playerInput)
-
         if (!this.playersInputs[userId]) return
         for (const input in playerInput) {
             this.playersInputs[userId][input as keyof PlayerInput] = playerInput[input as keyof PlayerInput]
@@ -103,10 +106,10 @@ export class Game implements IGame {
 
             if (!player) continue
             if (this.playersInputs[id].up) [
-                player.position.y += player.speed
+                player.position.y -= player.speed
             ]
             if (this.playersInputs[id].down) [
-                player.position.y -= player.speed
+                player.position.y += player.speed
             ]
             if (this.playersInputs[id].right) [
                 player.position.x += player.speed
@@ -114,8 +117,6 @@ export class Game implements IGame {
             if (this.playersInputs[id].left) [
                 player.position.x -= player.speed
             ]
-
-            console.log(player.position)
         }
     }
 

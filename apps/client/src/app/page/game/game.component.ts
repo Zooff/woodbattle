@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnInit, ViewChild } from '@angular/core';
 import { GameMapService } from '../../service/game-map.service';
-import { GameMap, IGame, IPlayerCharacters, PlayerInput, Vector2 } from '@woodbattle/shared/model';
+import { GameMap, IGame, IPlayerCharacters, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
 import { GameStateService } from '../../service/game-state.service';
@@ -11,6 +11,8 @@ import { SettingsService } from '../../service/settings.service';
 import { ConfigService } from '../../service/config.service';
 import { KeyboardManager } from '../../service/keyboardManager.service';
 import { PlayerCharacter } from '@woodbattle/client';
+import { LobbyService } from '../../service/lobby.service';
+import { UserService } from '../../service/user.service';
 
 @Component({
   selector: 'woodbattle-home',
@@ -53,6 +55,9 @@ export class GameComponent implements OnInit, AfterViewInit {
   private lastUpdate: number = 0
   private updateTime: number = 0
 
+  public roomName: string = ''
+  public user: string
+
 
   constructor(
     private gameMapService: GameMapService,
@@ -64,8 +69,12 @@ export class GameComponent implements OnInit, AfterViewInit {
     private socketService: SocketService,
     private settingsService: SettingsService,
     private configService: ConfigService,
-    private keyboardManager: KeyboardManager
-  ) { }
+    private keyboardManager: KeyboardManager,
+    private lobbyService: LobbyService,
+    private userService: UserService
+  ) {
+    this.user = userService.getActualUser().name
+   }
 
   ngOnInit(): void {
     this.socketService.onReceiveGameStart().subscribe((payload) => {
@@ -79,7 +88,7 @@ export class GameComponent implements OnInit, AfterViewInit {
 
     this.socketService.onReceiveGameUpdate().subscribe((payload) => {
       if (payload.action === 'update-game') {
-        this.gameStateService.playerCharacters = payload.playerCharacters as any
+        this.gameStateService.updateGame(payload.playerCharacters)
       }
     })
     this.actualMap = this.route.snapshot.data['shopMap']
@@ -106,6 +115,8 @@ export class GameComponent implements OnInit, AfterViewInit {
     // )
 
     this.socketService.isReady()
+
+    this.roomName = this.lobbyService.room.name
 
 
   }

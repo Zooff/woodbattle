@@ -20,4 +20,6 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
         this.speed = speed ?? 10
     }
 
+    
+
 }

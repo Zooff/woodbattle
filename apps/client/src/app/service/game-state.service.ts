@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { PlayerCharacter } from '@woodbattle/client'
-import { GameObject, IGame, Vector2 } from "@woodbattle/shared/model";
+import { GameObject, IGame, IPlayerCharacters, Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
 import { SocketService } from "./socket.service";
@@ -30,6 +30,13 @@ export class GameStateService implements IGame {
                 game.playerCharacters[player].speed, 
                 this.settingsService.scale
                 )
+        }
+    }
+
+    updateGame( playerCharacters: {[id: string]:IPlayerCharacters}) {
+        for (const player in playerCharacters) {
+            if (!this.playerCharacters[player]) continue
+            this.playerCharacters[player].position = playerCharacters[player].position
         }
     }
 
