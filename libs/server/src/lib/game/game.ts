@@ -1,14 +1,14 @@
-import {GameObject, IGame, PlayerInput, User, Vector2} from '@woodbattle/shared/model'
+import { GameObject, IGame, PlayerInput, User, Vector2 } from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
 import { Observable, Subject } from 'rxjs'
 
 export class Game implements IGame {
-    
-    public users: {[id: string]: User}
+
+    public users: { [id: string]: User }
     public roomName: string
     public actualMap: string = ''
 
-    public playerCharacters: {[id: string]: ServerPlayerCharacter} = {}
+    public playerCharacters: { [id: string]: ServerPlayerCharacter } = {}
 
     public spawnPosition: Vector2[] = []
 
@@ -18,25 +18,26 @@ export class Game implements IGame {
 
     private gameObjects: GameObject[] = []
 
-    private playersInputs: {[id: string]: PlayerInput} = {}
+    private playersInputs: { [id: string]: PlayerInput } = {}
 
     private source: Subject<any> = new Subject<any>()
     public $update: Observable<any> = new Observable<any>()
 
-    
 
-    constructor( users: User[], roomName: string, spawns: Vector2[], framerate?: number) {
+
+    constructor(users: User[], roomName: string, spawns: Vector2[], framerate?: number) {
         console.log('NEW GAME', spawns, users)
         this.users = {}
         this.spawnPosition = spawns
         for (let i = 0; i < users.length; i++) {
+            const selectedSpawn = this.spawnPosition[i % this.spawnPosition.length]
             this.users[users[i].id] = users[i]
             this.playerCharacters[users[i].id] = {
                 user: users[i],
-                position: this.spawnPosition[i % this.spawnPosition.length],
+                position: new Vector2(selectedSpawn.x, selectedSpawn.y),
                 isMoving: false,
                 isAttacking: false,
-                speed: 5
+                speed: 3
             }
             this.playersInputs[users[i].id] = {
                 up: false,
@@ -105,18 +106,32 @@ export class Game implements IGame {
             let player: ServerPlayerCharacter = this.playerCharacters[id]
 
             if (!player) continue
+
+            let speed = player.speed
+
+            if (this.playersInputs[id].up && this.playersInputs[id].left
+                || this.playersInputs[id].up && this.playersInputs[id].right
+                || this.playersInputs[id].down && this.playersInputs[id].left
+                || this.playersInputs[id].down && this.playersInputs[id].right
+            ) {
+                speed = 1 / Math.sqrt(2) * speed
+            }
+
             if (this.playersInputs[id].up) [
-                player.position.y -= player.speed
+                player.position.y -= speed
             ]
             if (this.playersInputs[id].down) [
-                player.position.y += player.speed
+                player.position.y += speed
             ]
             if (this.playersInputs[id].right) [
-                player.position.x += player.speed
+                player.position.x += speed
             ]
             if (this.playersInputs[id].left) [
-                player.position.x -= player.speed
+                player.position.x -= speed
             ]
+
+            // player.position.normalize()
+
         }
     }
 

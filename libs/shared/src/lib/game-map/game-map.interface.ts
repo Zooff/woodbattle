@@ -28,5 +28,6 @@ export interface GameMap {
     layers: Layer[],
     tileset: TileSet[]
     spawnPoint: Vector2[]
+    collision: any
 }
 

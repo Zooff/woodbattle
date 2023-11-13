@@ -31,7 +31,8 @@ export class GameMapService {
             tileHeight: null,
             layers: [],
             tileset: [],
-            spawnPoint: []
+            spawnPoint: [],
+            collision: []
         }
 
         if (namedMap) {
@@ -53,11 +54,17 @@ export class GameMapService {
     
             for (const layer of map.layers)  {
                 if (layer.type === 'tile') {
-                    const formatedLayer: Layer = {
-                        tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
-                        name: layer.name
+                    if (layer.name === 'collision') {
+
                     }
-                    formatedMap.layers.push(formatedLayer)
+                    else {
+                        const formatedLayer: Layer = {
+                            tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
+                            name: layer.name
+                        }
+                        formatedMap.layers.push(formatedLayer)
+                    }
+                   
                 }
                 else if (layer.type === 'object') {
                     if (layer.name === 'Spawn') {

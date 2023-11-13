@@ -151,7 +151,7 @@ export class GameComponent implements OnInit, AfterViewInit {
       players[player].draw(this.context)
     }
 
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'tree', this.scale)
+    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'foreground', this.scale)
 
     // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
     // this.mainCanvas!.nativeElement.height = this.canvasHeight * 2
@@ -207,6 +207,7 @@ export class GameComponent implements OnInit, AfterViewInit {
 
   private calculateScale(width: number, height: number) {
     this.scale = Math.round(Math.min(window.innerWidth / width, window.innerHeight / height))
+    if (this.scale > 1) this.scale = this.scale - 1
     this.settingsService.scale = this.scale
   }
 
