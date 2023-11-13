@@ -143,6 +143,7 @@ export class GameComponent implements OnInit, AfterViewInit {
     this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
 
     this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
+    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'collision', this.scale)
 
     const players = this.gameStateService.getAllPlayers()
     // console.log(players)

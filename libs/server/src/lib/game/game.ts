@@ -1,6 +1,7 @@
-import { GameObject, IGame, PlayerInput, User, Vector2 } from '@woodbattle/shared/model'
+import { GameMap, GameObject, IGame, PlayerInput, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
 import { Observable, Subject } from 'rxjs'
+import { Boundary } from 'libs/shared/src/lib/utils/quadtree'
 
 export class Game implements IGame {
 
@@ -20,15 +21,18 @@ export class Game implements IGame {
 
     private playersInputs: { [id: string]: PlayerInput } = {}
 
+    private map: GameMap
+
     private source: Subject<any> = new Subject<any>()
     public $update: Observable<any> = new Observable<any>()
 
 
 
-    constructor(users: User[], roomName: string, spawns: Vector2[], framerate?: number) {
-        console.log('NEW GAME', spawns, users)
+    constructor(users: User[], roomName: string, map: GameMap, framerate?: number) {
+        console.log('NEW GAME', users)
         this.users = {}
-        this.spawnPosition = spawns
+        this.map = map
+        this.spawnPosition = JSON.parse(JSON.stringify(map.spawnPoint))
         for (let i = 0; i < users.length; i++) {
             const selectedSpawn = this.spawnPosition[i % this.spawnPosition.length]
             this.users[users[i].id] = users[i]
@@ -37,7 +41,13 @@ export class Game implements IGame {
                 position: new Vector2(selectedSpawn.x, selectedSpawn.y),
                 isMoving: false,
                 isAttacking: false,
-                speed: 3
+                speed: 3,
+                collider: {
+                    position: new Vector2(5, 8),
+                    width: 10,
+                    height: 16,
+                    layer: 'player'
+                }
             }
             this.playersInputs[users[i].id] = {
                 up: false,
@@ -57,8 +67,6 @@ export class Game implements IGame {
         this.actualMap = 'shop'
 
         this.$update = this.source.asObservable()
-
-        console.log(this.playerCharacters)
     }
 
 
@@ -101,6 +109,10 @@ export class Game implements IGame {
         }
     }
 
+    public setMap(map: GameMap) {
+        this.map = map
+    }
+
     private movePlayers() {
         for (const id in this.playerCharacters) {
             let player: ServerPlayerCharacter = this.playerCharacters[id]
@@ -108,6 +120,7 @@ export class Game implements IGame {
             if (!player) continue
 
             let speed = player.speed
+            let nextPosition = new Vector2(player.position.x, player.position.y)
 
             if (this.playersInputs[id].up && this.playersInputs[id].left
                 || this.playersInputs[id].up && this.playersInputs[id].right
@@ -117,18 +130,32 @@ export class Game implements IGame {
                 speed = 1 / Math.sqrt(2) * speed
             }
 
-            if (this.playersInputs[id].up) [
-                player.position.y -= speed
-            ]
-            if (this.playersInputs[id].down) [
-                player.position.y += speed
-            ]
-            if (this.playersInputs[id].right) [
-                player.position.x += speed
-            ]
-            if (this.playersInputs[id].left) [
-                player.position.x -= speed
-            ]
+            if (this.playersInputs[id].up) {
+                nextPosition.y -= speed
+            }
+        
+            if (this.playersInputs[id].down) {
+                nextPosition.y += speed
+            }
+            if (this.playersInputs[id].right) {
+                nextPosition.x += speed
+            }
+            if (this.playersInputs[id].left) {
+                nextPosition.x -= speed
+            }
+
+            const walls = this.map.collision.retrieve(new Boundary(nextPosition.x, nextPosition.y, speed * 2, speed * 2))
+
+            let hasCollided = false
+            for (const wall of walls) {
+                const collider = {position: new Vector2(nextPosition.x + player.collider.position.x, nextPosition.y + player.collider.position.y), width: player.collider.width, height: player.collider.height, layer: 'player'}
+                if (isRectColliding(wall,  collider)) {
+                    hasCollided = true
+                    break
+                }
+            }
+
+            if (!hasCollided) player.position = nextPosition
 
             // player.position.normalize()
 

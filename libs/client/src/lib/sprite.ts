@@ -61,6 +61,8 @@ export class Sprite {
             this.frames[this.frame].frameSize.x * this.scale,
             this.frames[this.frame].frameSize.y * this.scale
         )
+
+        ctx.strokeRect(this.position.x + 5, this.position.y + 8, 10, 16)
     }
 
 }

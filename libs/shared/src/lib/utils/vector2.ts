@@ -23,4 +23,8 @@ export class Vector2 {
         this.y = this.y / scalar
     }
 
+    add(vec: Vector2): Vector2 {
+        return new Vector2(this.x += vec.x, this.y += vec.y)
+    }
+
 }

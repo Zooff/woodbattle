@@ -1,4 +1,4 @@
-import { GameObject, User, Vector2 } from "@woodbattle/shared/model";
+import { BoxCollider, GameObject, User, Vector2 } from "@woodbattle/shared/model";
 
 export interface ServerPlayerCharacter extends GameObject {
 
@@ -7,5 +7,7 @@ export interface ServerPlayerCharacter extends GameObject {
     isAttacking: boolean
 
     speed: number
+
+    collider: BoxCollider
 
 }

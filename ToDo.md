@@ -12,12 +12,13 @@
     - [x] Calculer bon ratio
     - [x] creation character dans le server
     - [x] mouvement V0
+    - [] State Machine pour mouvement/action
     - [x] Revoir le calcul pour les diagonales
-    - [] Stocker les collisons dans un quadTree
-    - [] Collision
+    - [x] Stocker les collisons dans un quadTree
+    - [x] Collision
     - [] Dash
     - [] attaque
-    - Client side prediction
+    - [] Client side prediction
 - Tech
     - Simuler du lag
 
@@ -27,6 +28,7 @@
     - Design une piece japonaise ( *Weeb* )
 
 - Game Design
+    - [] Lisser les collision
     - Plein de chose
 
 - Bonus : Dire a Sao que je l'aime

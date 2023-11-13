@@ -54,26 +54,34 @@ export class GameMapService {
           continue
         }
 
-        const tileset = this.getTileSetFromGid(layer.tiles[i].gid, map)
-        if (tileset) {
-
-          const tileInRow = tileset?.tileset.width / tileset.tileset.tileWidth
-          const offsetY = Math.floor(layer.tiles[i].id / tileInRow) * tileset.tileset.tileWidth
-          const offsetX = (layer.tiles[i].id % tileInRow) * tileset.tileset.tileHeight
-
-          if (tileset.image) {
-            context.drawImage(tileset.image,
-              offsetX,
-              offsetY,
-              tileset.tileset.tileWidth,
-              tileset.tileset.tileHeight,
-              x * tileset.tileset.tileWidth * scale,
-              y * tileset.tileset.tileHeight * scale,
-              tileset.tileset.tileWidth * scale,
-              tileset.tileset.tileHeight * scale)
-          }
-
+        if (layer.name === 'collision') {
+          context.fillStyle = 'red'
+          context.fillRect(x * map.tileWidth, y * map.tileHeight, map.tileWidth, map.tileHeight )
+          context.fillStyle = 'black'
         }
+        else {
+          const tileset = this.getTileSetFromGid(layer.tiles[i].gid, map)
+          if (tileset) {
+  
+            const tileInRow = tileset?.tileset.width / tileset.tileset.tileWidth
+            const offsetY = Math.floor(layer.tiles[i].id / tileInRow) * tileset.tileset.tileWidth
+            const offsetX = (layer.tiles[i].id % tileInRow) * tileset.tileset.tileHeight
+  
+            if (tileset.image) {
+              context.drawImage(tileset.image,
+                offsetX,
+                offsetY,
+                tileset.tileset.tileWidth,
+                tileset.tileset.tileHeight,
+                x * tileset.tileset.tileWidth * scale,
+                y * tileset.tileset.tileHeight * scale,
+                tileset.tileset.tileWidth * scale,
+                tileset.tileset.tileHeight * scale)
+            }
+  
+          }
+        }
+  
         x += 1
         if (x === map.width) {
           x = 0
