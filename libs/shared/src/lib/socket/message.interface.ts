@@ -27,6 +27,7 @@ export interface ClientGameReadyMessage extends DefaultClientMessage {
 export interface ServerGameMessage {
     action: 'init-game' | 'update-game' | 'update-map' | 'end-game'
     playerCharacters: {[id: string]: IPlayerCharacters}
+    gameObjects: GameObject[]
     actualMap: string
 }
 

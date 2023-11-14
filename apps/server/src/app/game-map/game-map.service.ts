@@ -33,27 +33,28 @@ export class GameMapService {
             layers: [],
             tileset: [],
             spawnPoint: [],
-            collision: null
+            collision: null,
+            gameObjects: []
         }
 
         if (namedMap) {
             console.log(path.join(process.cwd(), namedMap))
             const filePath = path.join(process.cwd(), namedMap)
             const map: any = await new Promise((resolve, reject) => {
-                tmxParser.parseFile(filePath, function(err, loadedMap) {
+                tmxParser.parseFile(filePath, function (err, loadedMap) {
                     if (err) return reject(err)
                     resolve(loadedMap)
                 })
             })
-    
+
             console.log('MAP', map)
 
             formatedMap.height = map.height
             formatedMap.width = map.width
             formatedMap.tileHeight = map.tileHeight
             formatedMap.tileWidth = map.tileWidth
-    
-            for (const layer of map.layers)  {
+
+            for (const layer of map.layers) {
                 if (layer.type === 'tile') {
                     /*if (layer.name === 'collision') {
 
@@ -88,13 +89,13 @@ export class GameMapService {
                         formatedMap.layers.push(formatedLayer)
                     }
                     else { */
-                        const formatedLayer: Layer = {
-                            tiles: layer.tiles.map((tile: any) => { return {id: tile.id, gid: tile.gid} }),
-                            name: layer.name
-                        }
-                        formatedMap.layers.push(formatedLayer)
+                    const formatedLayer: Layer = {
+                        tiles: layer.tiles.map((tile: any) => { return { id: tile.id, gid: tile.gid } }),
+                        name: layer.name
+                    }
+                    formatedMap.layers.push(formatedLayer)
                     // }
-                   
+
                 }
                 else if (layer.type === 'object') {
                     if (layer.name === 'Spawn') {
@@ -106,18 +107,33 @@ export class GameMapService {
                     if (layer.name === 'collision') {
 
                         formatedMap.collision = new QuadTree<BoxCollider>(
-                            new Boundary(0,0, formatedMap.width * formatedMap.tileWidth, formatedMap.height * formatedMap.tileHeight),
+                            new Boundary(0, 0, formatedMap.width * formatedMap.tileWidth, formatedMap.height * formatedMap.tileHeight),
                             4,
                             10
                         )
-                        
+
                         for (const object of layer.objects) {
-                            console.log(object)
-                            formatedMap.collision.insert({position: new Vector2(object.x, object.y), width: object.width, height: object.height, layer: 'all'})
+                            formatedMap.collision.insert({ position: new Vector2(object.x, object.y), width: object.width, height: object.height, layer: 'all' })
                         }
                     }
+
+                    if (layer.name === 'GameObjects') {
+                        for (const object of layer.objects) {
+                            console.log(object)
+                            let gameObject
+                            if (object.type === 'npc') {
+                                gameObject = {
+                                    position: new Vector2(object.x, object.y),
+                                    type: object.type,
+                                    image: object.properties.image
+                                }
+                            }
+                            formatedMap.gameObjects.push(gameObject)
+                        }
+
+                    }
                 }
-               
+
             }
 
             for (const tileset of map.tileSets) {
@@ -131,9 +147,9 @@ export class GameMapService {
                     height: tileset.image.height
                 })
             }
-    
+
         }
-       
+
         return formatedMap
     }
 }

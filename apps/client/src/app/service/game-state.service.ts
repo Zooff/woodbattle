@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { PlayerCharacter } from '@woodbattle/client'
+import { NpcCharacter, PlayerCharacter } from '@woodbattle/client'
 import { GameObject, IGame, IPlayerCharacters, Vector2 } from "@woodbattle/shared/model";
 import { ConfigService } from "./config.service";
 import { ResourceService } from "./resource.service";
@@ -12,6 +12,7 @@ import { SettingsService } from "./settings.service";
 export class GameStateService implements IGame {
 
     public playerCharacters: {[id: string]: PlayerCharacter} = {}
+    public gameObjects: any[] = [];
     public actualMap: string = '';
     public spawnPosition: Vector2[] = [];
 
@@ -31,12 +32,21 @@ export class GameStateService implements IGame {
                 this.settingsService.scale
                 )
         }
+
+        for (const gameObject of game.gameObjects) {
+           this.createGameObject(gameObject)
+        }
     }
 
-    updateGame( playerCharacters: {[id: string]:IPlayerCharacters}) {
+    updateGame( playerCharacters: {[id: string]:IPlayerCharacters}, gameObjects: GameObject[]) {
         for (const player in playerCharacters) {
             if (!this.playerCharacters[player]) continue
             this.playerCharacters[player].position = playerCharacters[player].position
+        }
+
+        for (let i = 0; i < gameObjects.length; i++) {
+            if (!this.gameObjects[i]) continue
+            this.gameObjects[i].position = gameObjects[i].position
         }
     }
 
@@ -51,14 +61,30 @@ export class GameStateService implements IGame {
             new Vector2(32, 32),
             0,
             4,
-            5,
+            6,
             scale ?? 1,
             speed
         )
 
     }
 
+    private createGameObject(gameObject: any) {
+        if (gameObject.type === 'npc') {
+            this.gameObjects.push(new NpcCharacter(
+                gameObject.position,
+                this.resourceService.getImage(this.configService.sprite.smith.image)!,
+                0,
+                new Vector2(32, 32),
+                0,
+                1,
+                8,
+                this.settingsService.scale
+            ))
+        }
+    }
+
     getAllPlayers() {
         return this.playerCharacters
     }
+    
 }

@@ -1,9 +1,10 @@
-import { IPlayerCharacters, Vector2 } from "@woodbattle/shared/model";
+import { Drawable, Vector2 } from "@woodbattle/shared/model";
 import { Sprite } from "./sprite";
 
-export class PlayerCharacter extends Sprite implements IPlayerCharacters {
+export class NpcCharacter extends Sprite implements Drawable {
 
-    speed: number
+    private staggerAnim = 25
+    private gameFrame = 0
 
     constructor (
         position: Vector2,
@@ -14,21 +15,19 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
         vFrame: number,
         hFrame: number,
         scale: number,
-        speed: number
     ) {
         super(position, image, frame, frameSize, frameSpace, hFrame, vFrame, scale)
-        this.speed = speed ?? 10
     }
-
 
     override draw(ctx: CanvasRenderingContext2D) {
 
         super.draw(ctx)
-        this.frame ++
-        if (this.frame <= this.hFrame) this.frame = 0
-        ctx.strokeRect(this.position.x + 5, this.position.y + 8, 10, 16)
+
+        if ( this.gameFrame % this.staggerAnim === 0 ) {
+            this.frame = this.frame + 1
+            if (this.frame === this.hFrame) this.frame = 0
+        }
+        this.gameFrame++
+       
     }
-
-    
-
 }

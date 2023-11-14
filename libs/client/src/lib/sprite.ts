@@ -27,10 +27,13 @@ export class Sprite {
         this.frame = frame ?? 0
         this.frameSize = frameSize ?? new Vector2(16, 16)
         this.hFrame = hFrame ?? 1
-        this.vFrame = 1
+        this.vFrame = vFrame ?? 1
         this.scale = scale ?? 1
 
         this.generateFrames()
+
+
+        console.log(this.frames)
     }
 
     public setScale ( scale: number) {
@@ -41,9 +44,10 @@ export class Sprite {
     generateFrames() {
         for (let i = 0; i<this.vFrame; i++) {
             for (let j = 0; j < this.hFrame; j++) {
+                console.log(this.hFrame)
                 this.frames.push({
-                    position: new Vector2(j, i),
-                    frameSize: new Vector2(21, 32)
+                    position: new Vector2(j * this.frameSize.x, i * this.frameSize.y),
+                    frameSize: this.frameSize
                 })
             }
         }
@@ -62,7 +66,6 @@ export class Sprite {
             this.frames[this.frame].frameSize.y * this.scale
         )
 
-        ctx.strokeRect(this.position.x + 5, this.position.y + 8, 10, 16)
     }
 
 }

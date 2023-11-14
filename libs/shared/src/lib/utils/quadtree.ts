@@ -1,7 +1,7 @@
 import { GameObject } from "./game-object.interface"
 import { Vector2 } from "./vector2"
 
-export class QuadTree<T extends GameObject> {
+export class QuadTree<T extends {position: Vector2, width: number, height: number}> {
 
     maxDepth: number
 
@@ -28,7 +28,7 @@ export class QuadTree<T extends GameObject> {
 
         console.log(object)
 
-        if (!this.boundary.contains(object.position.x, object.position.y)) {
+        if (!this.boundary.overlaps(new Boundary (object.position.x, object.position.y, object.width, object.height))) {
             return
         }
 
@@ -101,6 +101,10 @@ export class QuadTree<T extends GameObject> {
         else {
             if (this.objects) res = this.objects
             else res = []
+        }
+
+        if (this.level === 0) {
+            return Array.from(new Set(res))
         }
 
         return res

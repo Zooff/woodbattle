@@ -20,6 +20,7 @@ export class GameGateway {
         const serverPayload: ServerGameMessage = {
           action: 'init-game',
           playerCharacters: game.players,
+          gameObjects: game.gameObjects,
           actualMap: game.map
         }
         this.server.to(payload.roomName).emit('game-start', serverPayload)
@@ -36,6 +37,7 @@ export class GameGateway {
     const serverPayload: ServerGameMessage = {
       action: 'update-game',
       playerCharacters: update.playerCharacters,
+      gameObjects: update.gameObjects,
       actualMap: update.map
     }
     this.server.to(roomName).emit('game-update', serverPayload)

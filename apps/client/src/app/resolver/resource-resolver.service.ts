@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, ResolveFn, RouterStateSnapshot } from "@angular
 import { take } from "rxjs";
 import { ResourceService } from "../service/resource.service";
 
-const DEFAULT_RESSOURCE = ['swordman']
+const DEFAULT_RESSOURCE = ['swordman', 'smith']
 
 export const ResourceResolver: ResolveFn<any> = (
     route: ActivatedRouteSnapshot,

@@ -19,6 +19,7 @@
     - [] Dash
     - [] attaque
     - [] Client side prediction
+    - [] Animation
 - Tech
     - Simuler du lag
 

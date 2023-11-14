@@ -17,7 +17,7 @@ export class Game implements IGame {
 
     private tickInterval!: NodeJS.Timer
 
-    private gameObjects: GameObject[] = []
+    public gameObjects: GameObject[] = []
 
     private playersInputs: { [id: string]: PlayerInput } = {}
 
@@ -26,6 +26,10 @@ export class Game implements IGame {
     private source: Subject<any> = new Subject<any>()
     public $update: Observable<any> = new Observable<any>()
 
+    private lastRun: number = 0
+
+    private runDuration: number[] = []
+
 
 
     constructor(users: User[], roomName: string, map: GameMap, framerate?: number) {
@@ -33,6 +37,7 @@ export class Game implements IGame {
         this.users = {}
         this.map = map
         this.spawnPosition = JSON.parse(JSON.stringify(map.spawnPoint))
+        this.gameObjects = JSON.parse(JSON.stringify(map.gameObjects))
         for (let i = 0; i < users.length; i++) {
             const selectedSpawn = this.spawnPosition[i % this.spawnPosition.length]
             this.users[users[i].id] = users[i]
@@ -81,6 +86,7 @@ export class Game implements IGame {
 
         if (!start) return false
 
+        this.lastRun = Date.now()
         this.tick()
         return true
     }
@@ -89,10 +95,16 @@ export class Game implements IGame {
 
         if (this.tickInterval) clearInterval(this.tickInterval)
 
+        const now = Date.now()
+        this.runDuration.push(now - this.lastRun)
+        if (this.runDuration.length > 100) this.runDuration.pop
+        this.lastRun = now
+
         this.movePlayers()
 
         const update = {
-            playerCharacters: this.playerCharacters
+            playerCharacters: this.playerCharacters,
+            gameObjects: this.getGameObjects()
         }
         this.source.next(update)
         this.tickInterval = setTimeout(() => this.tick(), this.framerate)
@@ -111,6 +123,10 @@ export class Game implements IGame {
 
     public setMap(map: GameMap) {
         this.map = map
+    }
+
+    public getGameObjects() {
+        return this.gameObjects
     }
 
     private movePlayers() {

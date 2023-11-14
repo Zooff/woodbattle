@@ -25,7 +25,8 @@ export class GameService {
             resGame[room] = {
                 actualMap: this.games[room].actualMap,
                 playerCharacters: this.games[room].playerCharacters,
-                spawnPosition: this.games[room].spawnPosition
+                spawnPosition: this.games[room].spawnPosition,
+                gameObjects: this.games[room].getGameObjects()
             
             }
         }
@@ -74,6 +75,7 @@ export class GameService {
         const game = this.games[roomName]
         return {
             players: game.getPlayers(),
+            gameObjects: game.getGameObjects(),
             map: game.actualMap
         }
     } 

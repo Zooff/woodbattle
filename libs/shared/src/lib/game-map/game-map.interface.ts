@@ -1,4 +1,5 @@
 import { BoxCollider } from "../utils/collision"
+import { GameObject } from "../utils/game-object.interface"
 import { QuadTree } from "../utils/quadtree"
 import { Vector2 } from "../utils/vector2"
 
@@ -31,5 +32,6 @@ export interface GameMap {
     tileset: TileSet[]
     spawnPoint: Vector2[]
     collision: QuadTree<BoxCollider>
+    gameObjects: GameObject[]
 }
 

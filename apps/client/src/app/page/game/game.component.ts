@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnInit, ViewChild } from '@angular/core';
 import { GameMapService } from '../../service/game-map.service';
-import { GameMap, IGame, IPlayerCharacters, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
+import { Drawable, GameMap, IGame, IPlayerCharacters, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
 import { GameStateService } from '../../service/game-state.service';
@@ -88,7 +88,7 @@ export class GameComponent implements OnInit, AfterViewInit {
 
     this.socketService.onReceiveGameUpdate().subscribe((payload) => {
       if (payload.action === 'update-game') {
-        this.gameStateService.updateGame(payload.playerCharacters)
+        this.gameStateService.updateGame(payload.playerCharacters, payload.gameObjects)
       }
     })
     this.actualMap = this.route.snapshot.data['shopMap']
@@ -147,6 +147,15 @@ export class GameComponent implements OnInit, AfterViewInit {
 
     const players = this.gameStateService.getAllPlayers()
     // console.log(players)
+
+    const gameObjects =  this.gameStateService.gameObjects
+    for (const gameObject of gameObjects) {
+      if (gameObject.draw) {
+        gameObject.draw(this.context)
+      }
+    
+    }
+
     for (const player in players) {
       players[player].setScale(this.scale)
       players[player].draw(this.context)
