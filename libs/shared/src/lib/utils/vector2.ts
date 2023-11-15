@@ -27,4 +27,8 @@ export class Vector2 {
         return new Vector2(this.x += vec.x, this.y += vec.y)
     }
 
+    equals(vec: Vector2): boolean {
+        return this.x === vec.x && this.y === vec.y
+    }
+
 }

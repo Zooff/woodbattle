@@ -1,39 +1,37 @@
 import { Vector2 } from '@woodbattle/shared/model'
+import { Frame, FrameProps } from './sprite.interface'
 
 export class Sprite {
 
     public position: Vector2
     public image: HTMLImageElement
     public frame: number
-    public frameSize: Vector2
-    public hFrame: number
-    public vFrame: number
+    public frameProps: FrameProps
     public scale: number
 
-    private frames: { position: Vector2, frameSize: Vector2 }[] = []
+    public frames: Frame[] = []
 
     constructor(
         position: Vector2,
         image: HTMLImageElement,
         frame: number,
-        frameSize: Vector2,
-        frameSpace: number,
-        hFrame: number,
-        vFrame: number,
+        frameProps: FrameProps | null,
+        frames: Frame[] | null,
         scale: number
     ) {
         this.position = position ?? new Vector2(0, 0)
         this.image = image
         this.frame = frame ?? 0
-        this.frameSize = frameSize ?? new Vector2(16, 16)
-        this.hFrame = hFrame ?? 1
-        this.vFrame = vFrame ?? 1
+        this.frameProps = frameProps as FrameProps
         this.scale = scale ?? 1
+        this.frames = frames as Frame[] ?? []
 
-        this.generateFrames()
-
-
-        console.log(this.frames)
+        console.log(frameProps)
+        if (frameProps) {
+            this.generateFrames()
+        }
+        
+       
     }
 
     public setScale ( scale: number) {
@@ -42,12 +40,11 @@ export class Sprite {
 
 
     generateFrames() {
-        for (let i = 0; i<this.vFrame; i++) {
-            for (let j = 0; j < this.hFrame; j++) {
-                console.log(this.hFrame)
+        for (let i = 0; i<this.frameProps.vFrame; i++) {
+            for (let j = 0; j < this.frameProps.hFrame; j++) {
                 this.frames.push({
-                    position: new Vector2(j * this.frameSize.x, i * this.frameSize.y),
-                    frameSize: this.frameSize
+                    position: new Vector2(j * this.frameProps.frameSize.x, i * this.frameProps.frameSize.y),
+                    frameSize: this.frameProps.frameSize
                 })
             }
         }

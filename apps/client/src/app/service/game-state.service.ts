@@ -11,7 +11,7 @@ import { SettingsService } from "./settings.service";
 })
 export class GameStateService implements IGame {
 
-    public playerCharacters: {[id: string]: PlayerCharacter} = {}
+    public playerCharacters: { [id: string]: PlayerCharacter } = {}
     public gameObjects: any[] = [];
     public actualMap: string = '';
     public spawnPosition: Vector2[] = [];
@@ -21,27 +21,29 @@ export class GameStateService implements IGame {
         private resourceService: ResourceService,
         private socketService: SocketService,
         private settingsService: SettingsService
-    ) {}
+    ) { }
 
 
 
     init(game: IGame) {
         for (const player in game.playerCharacters) {
-            this.playerCharacters[player] = this.createPlayer(game.playerCharacters[player].position, 
-                game.playerCharacters[player].speed, 
+            this.playerCharacters[player] = this.createPlayer(game.playerCharacters[player].position,
+                game.playerCharacters[player].speed,
                 this.settingsService.scale
-                )
+            )
         }
 
         for (const gameObject of game.gameObjects) {
-           this.createGameObject(gameObject)
+            this.createGameObject(gameObject)
         }
     }
 
-    updateGame( playerCharacters: {[id: string]:IPlayerCharacters}, gameObjects: GameObject[]) {
+    updateGame(playerCharacters: { [id: string]: IPlayerCharacters }, gameObjects: GameObject[]) {
         for (const player in playerCharacters) {
             if (!this.playerCharacters[player]) continue
             this.playerCharacters[player].position = playerCharacters[player].position
+            this.playerCharacters[player].stateHasChange = (this.playerCharacters[player].state !== playerCharacters[player].state) 
+            this.playerCharacters[player].state = playerCharacters[player].state
         }
 
         for (let i = 0; i < gameObjects.length; i++) {
@@ -50,7 +52,7 @@ export class GameStateService implements IGame {
         }
     }
 
-    private createPlayer( position: Vector2, speed: number, scale: number) {
+    private createPlayer(position: Vector2, speed: number, scale: number) {
 
         // console.log(this.resourceService.getImage(this.configService.playerSprite))
 
@@ -58,10 +60,6 @@ export class GameStateService implements IGame {
             position,
             this.resourceService.getImage(this.configService.playerSprite)!,
             0,
-            new Vector2(32, 32),
-            0,
-            4,
-            6,
             scale ?? 1,
             speed
         )
@@ -74,10 +72,12 @@ export class GameStateService implements IGame {
                 gameObject.position,
                 this.resourceService.getImage(this.configService.sprite.smith.image)!,
                 0,
-                new Vector2(32, 32),
-                0,
-                1,
-                8,
+                {
+                    frameSize: new Vector2(32, 32),
+                    frameSpace: new Vector2(0, 0),
+                    vFrame: 1,
+                    hFrame: 8
+                },
                 this.settingsService.scale
             ))
         }
@@ -86,5 +86,5 @@ export class GameStateService implements IGame {
     getAllPlayers() {
         return this.playerCharacters
     }
-    
+
 }

@@ -1,4 +1,4 @@
-import { GameMap, GameObject, IGame, PlayerInput, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
+import { GameMap, GameObject, IGame, PlayerCharacterState, PlayerInput, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
 import { Observable, Subject } from 'rxjs'
 import { Boundary } from 'libs/shared/src/lib/utils/quadtree'
@@ -44,15 +44,16 @@ export class Game implements IGame {
             this.playerCharacters[users[i].id] = {
                 user: users[i],
                 position: new Vector2(selectedSpawn.x, selectedSpawn.y),
-                isMoving: false,
-                isAttacking: false,
+                state: PlayerCharacterState.IDLE,
                 speed: 3,
                 collider: {
                     position: new Vector2(5, 8),
                     width: 10,
                     height: 16,
                     layer: 'player'
-                }
+                },
+                attackCoolDown: 1500,
+                lastAttack: 0
             }
             this.playersInputs[users[i].id] = {
                 up: false,
@@ -135,6 +136,22 @@ export class Game implements IGame {
 
             if (!player) continue
 
+            const now = Date.now()
+
+            if (this.playersInputs[id].attack) {
+                if (now - player.lastAttack > player.attackCoolDown ) {
+                    player.state = PlayerCharacterState.ATTACKING
+                    player.lastAttack = now
+                    continue
+                }
+            }
+
+            if (player.state === PlayerCharacterState.ATTACKING) {
+                console.log(now - player.lastAttack)
+                if (now - player.lastAttack < 800)
+                continue
+            }
+
             let speed = player.speed
             let nextPosition = new Vector2(player.position.x, player.position.y)
 
@@ -158,6 +175,13 @@ export class Game implements IGame {
             }
             if (this.playersInputs[id].left) {
                 nextPosition.x -= speed
+            }
+
+            if (nextPosition.equals(player.position)) {
+                player.state = PlayerCharacterState.IDLE
+            }
+            else {
+                player.state = PlayerCharacterState.MOVING
             }
 
             const walls = this.map.collision.retrieve(new Boundary(nextPosition.x, nextPosition.y, speed * 2, speed * 2))

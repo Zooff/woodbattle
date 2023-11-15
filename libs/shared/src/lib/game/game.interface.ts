@@ -9,6 +9,12 @@ export interface IGame {
     spawnPosition: Vector2[]
 }
 
+export enum PlayerCharacterState {
+    IDLE, MOVING, ATTACKING, DASHING
+}
+
 export interface IPlayerCharacters extends GameObject {
     speed: number
+    state: PlayerCharacterState
 }
+

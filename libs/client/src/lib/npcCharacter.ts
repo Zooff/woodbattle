@@ -1,5 +1,6 @@
 import { Drawable, Vector2 } from "@woodbattle/shared/model";
 import { Sprite } from "./sprite";
+import { FrameProps } from "./sprite.interface";
 
 export class NpcCharacter extends Sprite implements Drawable {
 
@@ -10,13 +11,10 @@ export class NpcCharacter extends Sprite implements Drawable {
         position: Vector2,
         image: HTMLImageElement,
         frame: number,
-        frameSize: Vector2,
-        frameSpace: number,
-        vFrame: number,
-        hFrame: number,
+        frameProps: FrameProps,
         scale: number,
     ) {
-        super(position, image, frame, frameSize, frameSpace, hFrame, vFrame, scale)
+        super(position, image, frame, frameProps, null, scale)
     }
 
     override draw(ctx: CanvasRenderingContext2D) {
@@ -25,7 +23,7 @@ export class NpcCharacter extends Sprite implements Drawable {
 
         if ( this.gameFrame % this.staggerAnim === 0 ) {
             this.frame = this.frame + 1
-            if (this.frame === this.hFrame) this.frame = 0
+            if (this.frame === this.frameProps.hFrame) this.frame = 0
         }
         this.gameFrame++
        

@@ -26,7 +26,7 @@ export class KeyboardManager {
         right: ['d'],
         left: ['q'],
 
-        attack: [''],
+        attack: [' '],
         parry: [''],
         dash: [''],
         action1: ['']
