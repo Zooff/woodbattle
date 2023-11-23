@@ -21,15 +21,15 @@ export class KeyboardManager {
     lastInputSend: Partial<PlayerInput> = this.playerInput
 
     playerMapping: PlayerMapping = {
-        up: ['z'],
-        down: ['s'],
-        right: ['d'],
-        left: ['q'],
+        up: ['z', 'Z'],
+        down: ['s', 'S'],
+        right: ['d', 'D'],
+        left: ['q', 'Q'],
 
         attack: [' '],
-        parry: [''],
-        dash: [''],
-        action1: ['']
+        parry: ['a', 'A'],
+        dash: ['Shift'],
+        action1: ['e', 'E']
     }
 
     constructor() {

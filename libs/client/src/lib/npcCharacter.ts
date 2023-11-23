@@ -4,7 +4,7 @@ import { FrameProps } from "./sprite.interface";
 
 export class NpcCharacter extends Sprite implements Drawable {
 
-    private staggerAnim = 25
+    private staggerAnim = 10
     private gameFrame = 0
 
     constructor (

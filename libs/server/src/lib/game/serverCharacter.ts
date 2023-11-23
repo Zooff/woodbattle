@@ -1,6 +1,6 @@
-import { BoxCollider, GameObject, PlayerCharacterState, User, Vector2 } from "@woodbattle/shared/model";
+import { BoxCollider, GameObject, IPlayerCharacters, PlayerCharacterState, User, Vector2 } from "@woodbattle/shared/model";
 
-export interface ServerPlayerCharacter extends GameObject {
+export interface ServerPlayerCharacter extends  IPlayerCharacters  {
 
     user: User
     
@@ -8,9 +8,14 @@ export interface ServerPlayerCharacter extends GameObject {
 
     speed: number
 
+    direction: Vector2
+
     collider: BoxCollider
 
     attackCoolDown: number
     lastAttack: number
 
+    lastParryActivation: number
+    parryDuration: number
+    parryCoolDown: number
 }

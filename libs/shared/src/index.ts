@@ -14,3 +14,4 @@ export * from './lib/socket/message.interface'
 
 export * from './lib/game/game.interface'
 export * from './lib/game/playerInput.interface'
+export * from './lib/game/weapon'

@@ -51,6 +51,7 @@ export class GameComponent implements OnInit, AfterViewInit {
 
   private lastRun: number = 0
   public fps: number = 0
+  private fpsInterval = 1000 / 120
 
   private lastUpdate: number = 0
   private updateTime: number = 0
@@ -74,7 +75,7 @@ export class GameComponent implements OnInit, AfterViewInit {
     private userService: UserService
   ) {
     this.user = userService.getActualUser().name
-   }
+  }
 
   ngOnInit(): void {
     this.socketService.onReceiveGameStart().subscribe((payload) => {
@@ -134,39 +135,43 @@ export class GameComponent implements OnInit, AfterViewInit {
 
     if (!this.context || !this.actualMap) return
 
-    this.lastRun = delta
-    this.fps = Math.round(1000 / (performance.now() - this.lastRun))
+    if ( delta - this.lastRun > this.fpsInterval) {
 
-    this.mainCanvas!.nativeElement.width = this.actualMap.width * this.actualMap.tileWidth * this.scale
-    this.mainCanvas!.nativeElement.height = this.actualMap.height * this.actualMap.tileHeight * this.scale
+      this.fps = Math.round(1000 / (performance.now() - this.lastRun))
 
-    this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+      this.mainCanvas!.nativeElement.width = this.actualMap.width * this.actualMap.tileWidth * this.scale
+      this.mainCanvas!.nativeElement.height = this.actualMap.height * this.actualMap.tileHeight * this.scale
 
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'collision', this.scale)
+      this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
 
-    const players = this.gameStateService.getAllPlayers()
-    // console.log(players)
+      this.gameMapService.drawMapLayer(this.context, this.actualMap, 'background', this.scale)
+      this.gameMapService.drawMapLayer(this.context, this.actualMap, 'collision', this.scale)
 
-    const gameObjects =  this.gameStateService.gameObjects
-    for (const gameObject of gameObjects) {
-      if (gameObject.draw) {
-        gameObject.draw(this.context)
+      const players = this.gameStateService.getAllPlayers()
+      // console.log(players)
+
+      const gameObjects = this.gameStateService.gameObjects
+      for (const gameObject of gameObjects) {
+        if (gameObject.draw) {
+          gameObject.setScale(this.scale)
+          gameObject.draw(this.context)
+        }
+
       }
-    
+
+      for (const player in players) {
+        players[player].setScale(this.scale)
+        players[player].draw(this.context)
+      }
+
+      this.gameMapService.drawMapLayer(this.context, this.actualMap, 'foreground', this.scale)
+
+      // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
+      // this.mainCanvas!.nativeElement.height = this.canvasHeight * 2
+      // this.context?.scale(2, 2)
+
+      this.lastRun = delta
     }
-
-    for (const player in players) {
-      players[player].setScale(this.scale)
-      players[player].draw(this.context)
-    }
-
-    this.gameMapService.drawMapLayer(this.context, this.actualMap, 'foreground', this.scale)
-
-    // this.mainCanvas!.nativeElement.width = this.canvasWidth * 2
-    // this.mainCanvas!.nativeElement.height = this.canvasHeight * 2
-    // this.context?.scale(2, 2)
-
     window.requestAnimationFrame(this.gameLoop.bind(this))
   }
 
@@ -179,9 +184,10 @@ export class GameComponent implements OnInit, AfterViewInit {
     if (Object.keys(inputToSend).length > 0) {
       this.socketService.updateInput(inputToSend)
     }
-   
 
-    setTimeout( this.updateLoop.bind(this), this.configService.framerate) 
+
+
+    setTimeout(this.updateLoop.bind(this), this.configService.framerate)
   }
 
   initGame(game: any) {

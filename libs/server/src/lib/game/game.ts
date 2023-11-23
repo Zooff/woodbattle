@@ -1,4 +1,4 @@
-import { GameMap, GameObject, IGame, PlayerCharacterState, PlayerInput, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
+import { GameMap, GameObject, IGame, PlayerCharacterState, PlayerInput, Sword, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
 import { Observable, Subject } from 'rxjs'
 import { Boundary } from 'libs/shared/src/lib/utils/quadtree'
@@ -53,7 +53,14 @@ export class Game implements IGame {
                     layer: 'player'
                 },
                 attackCoolDown: 1500,
-                lastAttack: 0
+                lastAttack: 0,
+                direction: new Vector2(1, 0),
+                width: 10,
+                height: 16,
+                weapon: new Sword(),
+                lastParryActivation: 0,
+                parryDuration: 300,
+                parryCoolDown: 1000
             }
             this.playersInputs[users[i].id] = {
                 up: false,
@@ -101,7 +108,7 @@ export class Game implements IGame {
         if (this.runDuration.length > 100) this.runDuration.pop
         this.lastRun = now
 
-        this.movePlayers()
+        this.updatePlayers()
 
         const update = {
             playerCharacters: this.playerCharacters,
@@ -130,29 +137,54 @@ export class Game implements IGame {
         return this.gameObjects
     }
 
-    private movePlayers() {
+    private updatePlayers() {
         for (const id in this.playerCharacters) {
             let player: ServerPlayerCharacter = this.playerCharacters[id]
 
             if (!player) continue
 
+            if (player.state === PlayerCharacterState.DEAD) continue
+
+            let speed = player.speed
+
             const now = Date.now()
+
+            if (now - player.lastParryActivation > player.parryCoolDown && this.playersInputs[id].parry) {
+                player.state = PlayerCharacterState.PARRY
+                player.lastParryActivation = now
+            }
+
+            if (player.state === PlayerCharacterState.PARRY) {
+                if (now - player.lastParryActivation > player.parryDuration) {
+                    player.state = PlayerCharacterState.IDLE
+                }
+            }
 
             if (this.playersInputs[id].attack) {
                 if (now - player.lastAttack > player.attackCoolDown ) {
                     player.state = PlayerCharacterState.ATTACKING
                     player.lastAttack = now
-                    continue
+                    player.weapon.attack(player, Object.values(this.playerCharacters))
                 }
             }
 
             if (player.state === PlayerCharacterState.ATTACKING) {
                 console.log(now - player.lastAttack)
-                if (now - player.lastAttack < 800)
-                continue
+                if (now - player.lastAttack < 800) {
+                    speed /= 4
+                }
+
+                if (now - player.lastAttack > 1000) {
+                    player.state = PlayerCharacterState.IDLE
+                }
             }
 
-            let speed = player.speed
+            if (this.playersInputs[id].dash) {
+                player.state = PlayerCharacterState.DASHING
+                speed *= 4
+            }
+
+          
             let nextPosition = new Vector2(player.position.x, player.position.y)
 
             if (this.playersInputs[id].up && this.playersInputs[id].left
@@ -163,26 +195,34 @@ export class Game implements IGame {
                 speed = 1 / Math.sqrt(2) * speed
             }
 
+
             if (this.playersInputs[id].up) {
                 nextPosition.y -= speed
+                player.direction.y = 1
             }
         
             if (this.playersInputs[id].down) {
                 nextPosition.y += speed
+                player.direction.y = -1
             }
             if (this.playersInputs[id].right) {
                 nextPosition.x += speed
+                player.direction.x = 1
             }
             if (this.playersInputs[id].left) {
                 nextPosition.x -= speed
+                player.direction.x = -1
             }
 
-            if (nextPosition.equals(player.position)) {
-                player.state = PlayerCharacterState.IDLE
+            if ( player.state !== PlayerCharacterState.ATTACKING && player.state !== PlayerCharacterState.PARRY) {
+                if (nextPosition.equals(player.position)) {
+                    player.state = PlayerCharacterState.IDLE
+                }
+                else {
+                    player.state = PlayerCharacterState.MOVING
+                }
             }
-            else {
-                player.state = PlayerCharacterState.MOVING
-            }
+            
 
             const walls = this.map.collision.retrieve(new Boundary(nextPosition.x, nextPosition.y, speed * 2, speed * 2))
 

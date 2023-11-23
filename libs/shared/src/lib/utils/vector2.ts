@@ -31,4 +31,9 @@ export class Vector2 {
         return this.x === vec.x && this.y === vec.y
     }
 
+    zero() {
+        this.x = 0
+        this.y = 0
+    }
+
 }

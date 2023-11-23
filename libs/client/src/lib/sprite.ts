@@ -50,16 +50,16 @@ export class Sprite {
         }
     }
 
-    draw(ctx: CanvasRenderingContext2D) {
+    draw(ctx: CanvasRenderingContext2D, direction: number = 1) {
 
         ctx.drawImage(this.image,
             this.frames[this.frame].position.x,
             this.frames[this.frame].position.y,
             this.frames[this.frame].frameSize.x,
             this.frames[this.frame].frameSize.y,
-            this.position.x * this.scale,
+            direction *  this.position.x * this.scale,
             this.position.y * this.scale,
-            this.frames[this.frame].frameSize.x * this.scale,
+            direction *  this.frames[this.frame].frameSize.x * this.scale,
             this.frames[this.frame].frameSize.y * this.scale
         )
 

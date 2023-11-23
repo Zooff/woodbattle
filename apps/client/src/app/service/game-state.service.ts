@@ -44,6 +44,7 @@ export class GameStateService implements IGame {
             this.playerCharacters[player].position = playerCharacters[player].position
             this.playerCharacters[player].stateHasChange = (this.playerCharacters[player].state !== playerCharacters[player].state) 
             this.playerCharacters[player].state = playerCharacters[player].state
+            this.playerCharacters[player].direction = playerCharacters[player].direction
         }
 
         for (let i = 0; i < gameObjects.length; i++) {
