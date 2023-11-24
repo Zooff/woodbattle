@@ -9,7 +9,13 @@ export interface Weapon {
     knockback: number
     collider: BoxCollider
 
-    attack(player: IPlayerCharacters, players: IPlayerCharacters[]): void
+    activeCollider: {
+        start: number,
+        end: number
+    }
+
+    attack(player: IPlayerCharacters, players: {[id: string]: IPlayerCharacters}): void
+    clear(): void
 }
 
 export class Sword implements Weapon {
@@ -18,6 +24,11 @@ export class Sword implements Weapon {
     cooldown: number = 1500
     knockback: number = 100
 
+    activeCollider = {
+        start: 24 * 1000 / 60,
+        end: 40 * 1000 / 60
+    }
+
     collider: BoxCollider = {
         position: new Vector2(15, 8),
         width: 32,
@@ -25,8 +36,11 @@ export class Sword implements Weapon {
         layer: 'player'
     }
 
-    attack(player: IPlayerCharacters, players: IPlayerCharacters[]) {
+    private alreadyHit: string[] = []
 
+    attack(player: IPlayerCharacters, players: {[id: string]: IPlayerCharacters}) {
+
+        const now = performance.now()
         
         const playerCollider: BoxCollider = {
             position: new Vector2(
@@ -37,13 +51,17 @@ export class Sword implements Weapon {
             width: this.collider.width,
             layer: this.collider.layer
         }
-        for (const p of players) {
+        for (const id in players) {
+            const p = players[id]
             if (isRectColliding(playerCollider, {position: p.position, width: p.width, height: p.height, layer: 'player'})) {
+               
+                if (this.alreadyHit.includes(id)) return
+                this.alreadyHit.push(id)
                 console.log('ATTACK TOUCH')
                 if (p.state !== PlayerCharacterState.DEAD) {
                     
                     if (p.state === PlayerCharacterState.ATTACKING) {
-
+                        console.log('CLASH')
                     }
 
                     else if (p.state === PlayerCharacterState.PARRY) {
@@ -56,6 +74,10 @@ export class Sword implements Weapon {
                 }
             }
         }
+    }
+
+    clear(): void {
+        this.alreadyHit = []
     }
 
 }

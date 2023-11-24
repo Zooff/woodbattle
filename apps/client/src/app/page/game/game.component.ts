@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, NgZone, OnInit, ViewChild } from '@angular/core';
 import { GameMapService } from '../../service/game-map.service';
-import { Drawable, GameMap, IGame, IPlayerCharacters, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
+import { Drawable, GameMap, IGame, IPlayerCharacters, PlayerCharacterState, PlayerInput, User, Vector2 } from '@woodbattle/shared/model';
 import { ResourceService } from '../../service/resource.service';
 import { switchMap } from 'rxjs';
 import { GameStateService } from '../../service/game-state.service';
@@ -51,13 +51,17 @@ export class GameComponent implements OnInit, AfterViewInit {
 
   private lastRun: number = 0
   public fps: number = 0
-  private fpsInterval = 1000 / 120
+  private fpsInterval = 1000 / 60
 
   private lastUpdate: number = 0
   private updateTime: number = 0
 
   public roomName: string = ''
   public user: string
+
+  private isGameOver: boolean = false
+
+  private updateTimeout!: ReturnType<typeof setTimeout>
 
 
   constructor(
@@ -90,6 +94,10 @@ export class GameComponent implements OnInit, AfterViewInit {
     this.socketService.onReceiveGameUpdate().subscribe((payload) => {
       if (payload.action === 'update-game') {
         this.gameStateService.updateGame(payload.playerCharacters, payload.gameObjects)
+      }
+      else if (payload.action === 'end-game') {
+        console.log('GAME OVER')
+        this.gameOver()
       }
     })
     this.actualMap = this.route.snapshot.data['shopMap']
@@ -172,7 +180,10 @@ export class GameComponent implements OnInit, AfterViewInit {
 
       this.lastRun = delta
     }
-    window.requestAnimationFrame(this.gameLoop.bind(this))
+    if (!this.isGameOver) {
+      window.requestAnimationFrame(this.gameLoop.bind(this))
+    }
+   
   }
 
   updateLoop() {
@@ -187,7 +198,7 @@ export class GameComponent implements OnInit, AfterViewInit {
 
 
 
-    setTimeout(this.updateLoop.bind(this), this.configService.framerate)
+    this.updateTimeout = setTimeout(this.updateLoop.bind(this), this.configService.framerate)
   }
 
   initGame(game: any) {
@@ -225,6 +236,24 @@ export class GameComponent implements OnInit, AfterViewInit {
     this.scale = Math.round(Math.min(window.innerWidth / width, window.innerHeight / height))
     if (this.scale > 1) this.scale = this.scale - 1
     this.settingsService.scale = this.scale
+  }
+
+  private gameOver() {
+    this.isGameOver = true
+    clearTimeout(this.updateTimeout)
+
+    const players = this.gameStateService.getAllPlayers()
+    let winner = ''
+    for (const id in players) {
+      if (players[id].state !== PlayerCharacterState.DEAD) {
+        winner = this.lobbyService.room.users.find( (el) => el.id === id)?.name!
+      }
+    }
+    this.context?.clearRect(0,0, this.canvasWidth, this.canvasHeight)
+    this.context!.fillStyle = 'white'
+    this.context!.font = "48px serif";
+    this.context!.fillText("Game Over", this.canvasWidth/ 2 - 30, this.canvasHeight/2)
+    this.context!.fillText("Winner : " + winner, this.canvasWidth/ 2 - 30, this.canvasHeight/2 + 40)
   }
 
 }

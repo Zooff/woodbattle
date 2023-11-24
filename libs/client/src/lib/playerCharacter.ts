@@ -22,7 +22,7 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
 
     direction: Vector2 = new Vector2(-1, 0)
 
-    private staggerAnim = 10
+    private staggerAnim = 8
     private gameFrame = 0
 
     private showGizmo = true
@@ -70,8 +70,6 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
             ctx.scale(this.direction.x, 1)
         }
 
-        console.log(this.frame, this.state)
-
         super.draw(ctx, this.direction.x)
         if (this.gameFrame % this.staggerAnim === 0) {
             this.frame++
@@ -83,7 +81,7 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
         // Gizmo
         if (this.showGizmo) {
             ctx.fillStyle = 'pink'
-            ctx.fillRect(this.position.x * this.direction.x, this.position.y, 10, 10)
+            ctx.fillRect(this.position.x * this.direction.x, this.position.y, 10 * this.direction.x, 10)
             ctx.fillStyle = 'black'
             ctx.strokeRect((this.position.x + 5) * this.direction.x * this.scale, (this.position.y + 8) * this.scale, 10 * this.scale * this.direction.x, 16 * this.scale)
 
@@ -99,11 +97,11 @@ export class PlayerCharacter extends Sprite implements IPlayerCharacters {
             }
 
             if (this.state === PlayerCharacterState.PARRY) {
-                ctx.globalCompositeOperation = "lighter";
-                ctx.fillStyle = "blue";
-                ctx.fillRect(this.position.x * this.scale, this.position.y * this.scale, 32 * this.scale, 32 * this.scale);
-                ctx.globalCompositeOperation = "source-over";
-                ctx.fillStyle = "black";
+                ctx.strokeStyle = 'blue'
+                ctx.beginPath();
+                ctx.arc((this.position.x + 16) * this.scale * this.direction.x, (this.position.y + 16) * this.scale, 16, Math.PI *3 /2, Math.PI / 2);
+                ctx.stroke()
+                ctx.strokeStyle = 'black'
             }
         }
 

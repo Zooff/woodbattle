@@ -51,6 +51,9 @@ export class GameService {
         this.games[roomName] = game
         this.gamesUpdate[roomName] = this.games[roomName].$update.subscribe((update) => {
             this.gameGateway.updateGame(roomName, update)
+            // if (update.action === 'end-game') {
+            //     this.removeGame(roomName)
+            // }
         })
         return game
     }
@@ -73,6 +76,7 @@ export class GameService {
 
     getGame(roomName: string) {
         const game = this.games[roomName]
+        if (!game) return null
         return {
             players: game.getPlayers(),
             gameObjects: game.getGameObjects(),

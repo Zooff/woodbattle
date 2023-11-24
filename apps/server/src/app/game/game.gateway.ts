@@ -35,7 +35,7 @@ export class GameGateway {
   
   updateGame(roomName: string, update: any) {
     const serverPayload: ServerGameMessage = {
-      action: 'update-game',
+      action: update.action,
       playerCharacters: update.playerCharacters,
       gameObjects: update.gameObjects,
       actualMap: update.map

@@ -92,6 +92,10 @@ export class GameMapService {
     }
   }
 
+  gameOver() {
+    
+  }
+
   private getTileSetFromGid(gid: number, map: GameMap): { tileset: TileSet, image: HTMLImageElement | null } | null {
 
     if (this.tilesImage[gid]) return this.tilesImage[gid]

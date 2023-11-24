@@ -1,4 +1,4 @@
-import { GameMap, GameObject, IGame, PlayerCharacterState, PlayerInput, Sword, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
+import { GameMap, GameObject, IGame, IPlayerCharacters, PlayerCharacterState, PlayerInput, Sword, User, Vector2, isRectColliding } from '@woodbattle/shared/model'
 import { ServerPlayerCharacter } from './serverCharacter'
 import { Observable, Subject } from 'rxjs'
 import { Boundary } from 'libs/shared/src/lib/utils/quadtree'
@@ -101,16 +101,28 @@ export class Game implements IGame {
 
     private tick() {
 
-        if (this.tickInterval) clearInterval(this.tickInterval)
+        if (this.tickInterval) clearTimeout(this.tickInterval)
 
         const now = Date.now()
         this.runDuration.push(now - this.lastRun)
         if (this.runDuration.length > 100) this.runDuration.pop
         this.lastRun = now
 
+        if (this.gameOver(this.playerCharacters)) {
+            clearTimeout(this.tickInterval)
+            console.log('Game Over')
+            this.source.next({
+                action: 'end-game',
+                playerCharacters: this.playerCharacters,
+                gameObjects: this.getGameObjects()
+            })
+            return
+        }
+
         this.updatePlayers()
 
         const update = {
+            action: 'update-game',
             playerCharacters: this.playerCharacters,
             gameObjects: this.getGameObjects()
         }
@@ -163,19 +175,21 @@ export class Game implements IGame {
             if (this.playersInputs[id].attack) {
                 if (now - player.lastAttack > player.attackCoolDown ) {
                     player.state = PlayerCharacterState.ATTACKING
-                    player.lastAttack = now
-                    player.weapon.attack(player, Object.values(this.playerCharacters))
+                    player.lastAttack = now                                            
                 }
             }
 
             if (player.state === PlayerCharacterState.ATTACKING) {
                 console.log(now - player.lastAttack)
-                if (now - player.lastAttack < 800) {
-                    speed /= 4
+                speed /= 4
+                if (now - player.lastAttack > player.weapon.activeCollider.start && now - player.lastAttack < player.weapon.activeCollider.end) {
+                    player.weapon.attack(player, this.playerCharacters)
                 }
 
-                if (now - player.lastAttack > 1000) {
+                if (now - player.lastAttack > 640) {
+                    player.weapon.clear()
                     player.state = PlayerCharacterState.IDLE
+                    speed = player.speed
                 }
             }
 
@@ -240,6 +254,17 @@ export class Game implements IGame {
             // player.position.normalize()
 
         }
+    }
+
+    private gameOver(playerCharacters:  { [id: string]: ServerPlayerCharacter }): boolean {
+        let alive = 0
+        for (const id in playerCharacters) {
+            if (playerCharacters[id].state !== PlayerCharacterState.DEAD) {
+                alive++
+            }
+        }
+
+        return alive === 1
     }
 
     public destroy() {
